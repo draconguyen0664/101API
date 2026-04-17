@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* Bật dark mode bằng class */
+@custom-variant dark (&:where(.dark, .dark *));
