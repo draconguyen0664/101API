@@ -107,13 +107,13 @@ const rows = [
 function FilterInput({ label, placeholder }) {
   return (
     <div className="min-w-0">
-      <label className="mb-2 block text-sm font-semibold text-slate-700">
+      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
         {label}
       </label>
       <input
         type="text"
         placeholder={placeholder}
-        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300"
+        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400"
       />
     </div>
   );
@@ -139,7 +139,7 @@ function FilterSelect({ label, options = ["All"], defaultValue = "All" }) {
 
   return (
     <div className="min-w-0" ref={wrapperRef}>
-      <label className="mb-2 block text-sm font-semibold text-slate-700">
+      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
         {label}
       </label>
 
@@ -147,12 +147,14 @@ function FilterSelect({ label, options = ["All"], defaultValue = "All" }) {
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className={`flex h-11 w-full items-center justify-between rounded-xl border bg-white px-4 text-sm transition ${
+          className={`flex h-11 w-full items-center justify-between rounded-xl border px-4 text-sm transition ${
             open
-              ? "border-cyan-300 ring-2 ring-cyan-100"
-              : "border-slate-200 hover:border-slate-300"
+              ? "border-cyan-300 bg-white ring-2 ring-cyan-100 dark:border-cyan-400 dark:bg-slate-900 dark:ring-cyan-500/20"
+              : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
           }`}>
-          <span className="truncate text-slate-700">{selected}</span>
+          <span className="truncate text-slate-700 dark:text-slate-100">
+            {selected}
+          </span>
 
           <ChevronDown
             className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
@@ -162,7 +164,7 @@ function FilterSelect({ label, options = ["All"], defaultValue = "All" }) {
         </button>
 
         {open && (
-          <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
+          <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900">
             <div className="py-2">
               {options.map((option) => {
                 const isSelected = option === selected;
@@ -177,8 +179,8 @@ function FilterSelect({ label, options = ["All"], defaultValue = "All" }) {
                     }}
                     className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition ${
                       isSelected
-                        ? "bg-cyan-50 font-semibold text-cyan-600"
-                        : "text-slate-700 hover:bg-slate-50"
+                        ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
+                        : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
                     }`}>
                     <span>{option}</span>
                     {isSelected && <Check className="h-4 w-4" />}
@@ -216,11 +218,11 @@ function RowsPerPageSelect({ value, onChange }) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className={`flex h-9 min-w-[64px] items-center justify-between rounded-xl border bg-white pl-3 pr-3 text-sm text-slate-700 transition ${
+        className={`flex h-9 min-w-[64px] items-center justify-between rounded-xl border pl-3 pr-3 text-sm transition ${
           open
-            ? "border-cyan-300 ring-2 ring-cyan-100"
-            : "border-slate-200 hover:border-slate-300"
-        }`}>
+            ? "border-cyan-300 bg-white ring-2 ring-cyan-100 dark:border-cyan-400 dark:bg-slate-900 dark:ring-cyan-500/20"
+            : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
+        } text-slate-700 dark:text-slate-100`}>
         <span>{value}</span>
         <ChevronDown
           className={`ml-2 h-4 w-4 text-slate-400 transition-transform ${
@@ -230,7 +232,7 @@ function RowsPerPageSelect({ value, onChange }) {
       </button>
 
       {open && (
-        <div className="absolute bottom-[calc(100%+8px)] left-0 z-30 min-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
+        <div className="absolute bottom-[calc(100%+8px)] left-0 z-30 min-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900">
           <div className="py-2">
             {options.map((option) => {
               const selected = option === value;
@@ -245,8 +247,8 @@ function RowsPerPageSelect({ value, onChange }) {
                   }}
                   className={`block w-full px-4 py-2 text-left text-sm transition ${
                     selected
-                      ? "bg-cyan-50 font-semibold text-cyan-600"
-                      : "text-slate-700 hover:bg-slate-50"
+                      ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
+                      : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
                   }`}>
                   {option}
                 </button>
@@ -265,7 +267,9 @@ function StatusBadge({ status }) {
   return (
     <span
       className={`inline-flex min-w-[60px] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${
-        isActive ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500"
+        isActive
+          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300"
+          : "bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-300"
       }`}>
       {status}
     </span>
@@ -279,7 +283,7 @@ function ActionButtons({ action }) {
     <div className="flex items-center gap-2">
       <button
         type="button"
-        className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500">
+        className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
         <Pencil className="h-3 w-3" />
         <span>Edit</span>
       </button>
@@ -287,7 +291,9 @@ function ActionButtons({ action }) {
       <button
         type="button"
         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
-          enable ? "bg-emerald-50 text-emerald-500" : "bg-red-50 text-red-500"
+          enable
+            ? "bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-300"
+            : "bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-300"
         }`}>
         {enable ? (
           <CheckCircle2 className="h-3 w-3" />
@@ -389,16 +395,16 @@ function GameManagementPage() {
   };
 
   return (
-    <div className="overflow-hidden rounded-[20px] border border-cyan-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-      <div className="relative border-b border-cyan-300 bg-slate-50 px-5 py-5">
+    <div className="overflow-hidden rounded-[20px] border border-cyan-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-cyan-500/30 dark:bg-slate-950">
+      <div className="relative border-b border-cyan-300 bg-slate-50 px-5 py-5 dark:border-cyan-500/30 dark:bg-slate-900">
         <img
           src="/pattern3.png"
           alt=""
-          className="pointer-events-none absolute right-0 top-0 h-full w-60 object-cover"
+          className="pointer-events-none absolute right-0 top-0 h-full w-60 object-cover opacity-35"
         />
 
         <div className="relative z-10">
-          <h1 className="text-[30px] font-bold tracking-[-0.03em] text-slate-800">
+          <h1 className="text-[30px] font-bold tracking-[-0.03em] text-slate-800 dark:text-white">
             View Game List
           </h1>
 
@@ -438,7 +444,7 @@ function GameManagementPage() {
 
               <button
                 type="button"
-                className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                 Reset
               </button>
             </div>
@@ -449,7 +455,7 @@ function GameManagementPage() {
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="bg-slate-50 text-left text-slate-600">
+            <tr className="bg-slate-50 text-left text-slate-600 dark:bg-slate-900 dark:text-slate-300">
               <th className="px-4 py-4 font-semibold">Game ID</th>
               <th className="px-4 py-4 font-semibold">Game</th>
               <th className="px-4 py-4 font-semibold">Description</th>
@@ -465,12 +471,12 @@ function GameManagementPage() {
             {currentRows.map((row) => (
               <tr
                 key={row.id}
-                className="border-t border-slate-100 text-slate-700">
+                className="border-t border-slate-100 text-slate-700 dark:border-slate-800 dark:text-slate-300">
                 <td className="px-4 py-3">{row.id}</td>
 
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-300 text-white">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-300 text-white dark:bg-slate-700">
                       <Gamepad2 className="h-3.5 w-3.5" />
                     </div>
                     <span>{row.game}</span>
@@ -493,7 +499,7 @@ function GameManagementPage() {
         </table>
       </div>
 
-      <div className="flex flex-col gap-4 border-t border-slate-100 px-5 py-5 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 border-t border-slate-100 px-5 py-5 text-sm text-slate-400 md:flex-row md:items-center md:justify-between dark:border-slate-800 dark:text-slate-500">
         <div className="flex items-center gap-2">
           <span>Showing data</span>
 
@@ -507,15 +513,15 @@ function GameManagementPage() {
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-slate-500">
+        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
           <button
             type="button"
             onClick={handlePrevious}
             disabled={currentPage === 1}
             className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 transition ${
               currentPage === 1
-                ? "cursor-not-allowed text-slate-300"
-                : "text-slate-400 hover:text-slate-600"
+                ? "cursor-not-allowed text-slate-300 dark:text-slate-700"
+                : "text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
             }`}>
             <ArrowLeft className="h-4 w-4" />
             <span>Previous</span>
@@ -529,7 +535,7 @@ function GameManagementPage() {
                     key={`ellipsis-${item.direction}-${index}`}
                     type="button"
                     onClick={() => handleEllipsisClick(item.direction)}
-                    className="rounded-lg px-2 py-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
+                    className="rounded-lg px-2 py-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
                     ...
                   </button>
                 );
@@ -543,7 +549,7 @@ function GameManagementPage() {
                   className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 transition ${
                     currentPage === item.value
                       ? "bg-indigo-600 text-white"
-                      : "text-slate-700 hover:bg-slate-100"
+                      : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                   }`}>
                   {item.value}
                 </button>
@@ -557,8 +563,8 @@ function GameManagementPage() {
             disabled={currentPage === totalPages}
             className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 transition ${
               currentPage === totalPages
-                ? "cursor-not-allowed text-slate-300"
-                : "text-slate-700 hover:text-slate-900"
+                ? "cursor-not-allowed text-slate-300 dark:text-slate-700"
+                : "text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
             }`}>
             <span>Next</span>
             <ArrowRight className="h-4 w-4" />

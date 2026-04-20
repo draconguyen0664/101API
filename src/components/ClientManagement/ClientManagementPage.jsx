@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  CalendarDays,
   Check,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   CircleOff,
   Pencil,
@@ -167,10 +169,169 @@ const availableGames = [
   },
 ];
 
+function startOfDay(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function endOfDay(date) {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+function addDays(date, amount) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + amount);
+  return d;
+}
+
+function addMonths(date, amount) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + amount);
+  return d;
+}
+
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function endOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+}
+
+function startOfWeek(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - day);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function endOfWeek(date) {
+  const d = startOfWeek(date);
+  d.setDate(d.getDate() + 6);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+function isSameDay(a, b) {
+  if (!a || !b) return false;
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function isDateBetween(date, start, end) {
+  if (!start || !end) return false;
+  const current = startOfDay(date).getTime();
+  return (
+    current > startOfDay(start).getTime() && current < startOfDay(end).getTime()
+  );
+}
+
+function formatMonthYear(date) {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatShortDate(date) {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatRangeValue(start, end) {
+  if (!start || !end) return "";
+  return `${formatShortDate(start)} - ${formatShortDate(end)}`;
+}
+
+function getPresetRange(type) {
+  const today = new Date();
+
+  switch (type) {
+    case "Today":
+      return {
+        start: startOfDay(today),
+        end: endOfDay(today),
+      };
+
+    case "Yesterday": {
+      const yesterday = addDays(today, -1);
+      return {
+        start: startOfDay(yesterday),
+        end: endOfDay(yesterday),
+      };
+    }
+
+    case "This Week":
+      return {
+        start: startOfWeek(today),
+        end: endOfWeek(today),
+      };
+
+    case "Last Week": {
+      const lastWeekDate = addDays(today, -7);
+      return {
+        start: startOfWeek(lastWeekDate),
+        end: endOfWeek(lastWeekDate),
+      };
+    }
+
+    case "This Month":
+      return {
+        start: startOfMonth(today),
+        end: endOfMonth(today),
+      };
+
+    case "Last Month": {
+      const lastMonth = addMonths(today, -1);
+      return {
+        start: startOfMonth(lastMonth),
+        end: endOfMonth(lastMonth),
+      };
+    }
+
+    default:
+      return {
+        start: null,
+        end: null,
+      };
+  }
+}
+
+function getMonthDays(monthDate) {
+  const firstDay = startOfMonth(monthDate);
+  const lastDay = endOfMonth(monthDate);
+
+  const startCalendar = new Date(firstDay);
+  startCalendar.setDate(firstDay.getDate() - firstDay.getDay());
+
+  const endCalendar = new Date(lastDay);
+  endCalendar.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
+
+  const days = [];
+  const cursor = new Date(startCalendar);
+
+  while (cursor <= endCalendar) {
+    days.push(new Date(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return days;
+}
+
 function FilterInput({ label, placeholder, value, onChange }) {
   return (
     <div className="min-w-0">
-      <label className="mb-2 block text-sm font-semibold text-slate-700">
+      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
         {label}
       </label>
       <input
@@ -178,8 +339,238 @@ function FilterInput({ label, placeholder, value, onChange }) {
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300"
+        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400"
       />
+    </div>
+  );
+}
+
+function DateRangePickerInput({ label, value, onChange }) {
+  const wrapperRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [leftMonth, setLeftMonth] = useState(startOfMonth(new Date()));
+  const [draftStart, setDraftStart] = useState(value.start);
+  const [draftEnd, setDraftEnd] = useState(value.end);
+
+  useEffect(() => {
+    setDraftStart(value.start);
+    setDraftEnd(value.end);
+
+    if (value.start) {
+      setLeftMonth(startOfMonth(value.start));
+    }
+  }, [value.start, value.end]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!wrapperRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const rightMonth = addMonths(leftMonth, 1);
+  const leftDays = getMonthDays(leftMonth);
+  const rightDays = getMonthDays(rightMonth);
+
+  const displayValue =
+    draftStart && draftEnd ? formatRangeValue(draftStart, draftEnd) : "";
+
+  const applyPreset = (preset) => {
+    const range = getPresetRange(preset);
+    setDraftStart(range.start);
+    setDraftEnd(range.end);
+    onChange(range);
+  };
+
+  const handleDateClick = (date) => {
+    const clickedDate = startOfDay(date);
+
+    if (!draftStart || (draftStart && draftEnd)) {
+      setDraftStart(clickedDate);
+      setDraftEnd(null);
+      return;
+    }
+
+    if (clickedDate.getTime() < draftStart.getTime()) {
+      setDraftStart(clickedDate);
+      return;
+    }
+
+    const newEnd = endOfDay(clickedDate);
+    setDraftEnd(newEnd);
+    onChange({
+      start: draftStart,
+      end: newEnd,
+    });
+  };
+
+  const renderCalendar = (monthDate, days) => {
+    return (
+      <div className="w-full">
+        <div className="mb-3 grid grid-cols-7 place-items-center gap-y-2 text-[12px] text-slate-400 dark:text-slate-500">
+          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+            <div key={day} className="flex h-8 w-8 items-center justify-center">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 place-items-center gap-y-2">
+          {days.map((day) => {
+            const isOutsideMonth = day.getMonth() !== monthDate.getMonth();
+            const isStart = draftStart && isSameDay(day, draftStart);
+            const isEnd = draftEnd && isSameDay(day, draftEnd);
+            const isBetween = isDateBetween(day, draftStart, draftEnd);
+            const isSelected = isStart || isEnd;
+
+            return (
+              <button
+                key={day.toISOString()}
+                type="button"
+                onClick={() => handleDateClick(day)}
+                className={`flex h-10 w-10 items-center justify-center rounded-[10px] text-[14px] transition ${
+                  isSelected
+                    ? "bg-linear-to-r from-sky-400 to-emerald-400 text-white shadow-sm"
+                    : isBetween
+                      ? "bg-emerald-50 text-slate-800 dark:bg-emerald-500/10 dark:text-slate-100"
+                      : isOutsideMonth
+                        ? "text-slate-300 dark:text-slate-600"
+                        : "text-slate-800 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800"
+                }`}>
+                {day.getDate()}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-w-0" ref={wrapperRef}>
+      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+        {label}
+      </label>
+
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          className={`flex h-11 w-full items-center justify-between rounded-xl border bg-white px-4 text-left transition ${
+            open
+              ? "border-cyan-300 ring-2 ring-cyan-100 dark:border-cyan-400 dark:ring-cyan-500/20"
+              : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
+          } dark:bg-slate-900`}>
+          <span
+            className={`truncate text-sm ${
+              displayValue
+                ? "text-slate-700 dark:text-slate-100"
+                : "text-slate-300 dark:text-slate-500"
+            }`}>
+            {displayValue || "Select date range"}
+          </span>
+
+          <CalendarDays className="h-5 w-5 shrink-0 text-slate-600 dark:text-slate-300" />
+        </button>
+
+        {open && (
+          <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[760px] overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex">
+              <div className="w-[150px] border-r border-slate-200 px-4 py-4 dark:border-slate-700">
+                <div className="space-y-3">
+                  {[
+                    "Today",
+                    "Yesterday",
+                    "This Week",
+                    "Last Week",
+                    "This Month",
+                    "Last Month",
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => applyPreset(preset)}
+                      className="block text-left text-[15px] text-slate-800 transition hover:text-cyan-600 dark:text-slate-100 dark:hover:text-cyan-400">
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <div className="flex items-center border-b border-slate-200 dark:border-slate-700">
+                  <div className="flex w-1/2 items-center justify-between border-r border-slate-200 px-4 py-3 dark:border-slate-700">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLeftMonth((prev) => addMonths(prev, -1))
+                      }
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800">
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+
+                    <div className="text-[16px] font-bold text-slate-800 dark:text-white">
+                      {formatMonthYear(leftMonth)}
+                    </div>
+
+                    <div className="h-9 w-9" />
+                  </div>
+
+                  <div className="flex w-1/2 items-center justify-between px-4 py-3">
+                    <div className="h-9 w-9" />
+
+                    <div className="text-[16px] font-bold text-slate-800 dark:text-white">
+                      {formatMonthYear(rightMonth)}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setLeftMonth((prev) => addMonths(prev, 1))}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800">
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-0 px-5 py-4">
+                  <div className="w-1/2 pr-4">
+                    {renderCalendar(leftMonth, leftDays)}
+                  </div>
+                  <div className="w-1/2 pl-4">
+                    {renderCalendar(rightMonth, rightDays)}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-5 py-3 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDraftStart(null);
+                      setDraftEnd(null);
+                      onChange({ start: null, end: null });
+                    }}
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                    Clear
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    className="rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-4 py-2 text-sm font-semibold text-white">
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -210,7 +601,7 @@ function FilterSelect({
   return (
     <div className="min-w-0" ref={wrapperRef}>
       {label ? (
-        <label className="mb-2 block text-sm font-semibold text-slate-700">
+        <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
           {label}
         </label>
       ) : null}
@@ -221,10 +612,12 @@ function FilterSelect({
           onClick={() => setOpen((prev) => !prev)}
           className={`flex h-11 w-full items-center justify-between rounded-xl border bg-white px-4 text-sm transition ${
             open
-              ? "border-cyan-300 ring-2 ring-cyan-100"
-              : "border-slate-200 hover:border-slate-300"
-          }`}>
-          <span className="truncate text-slate-700">{value}</span>
+              ? "border-cyan-300 ring-2 ring-cyan-100 dark:border-cyan-400 dark:ring-cyan-500/20"
+              : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
+          } dark:bg-slate-900`}>
+          <span className="truncate text-slate-700 dark:text-slate-100">
+            {value}
+          </span>
           <ChevronDown
             className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
               open ? "rotate-180" : ""
@@ -234,7 +627,7 @@ function FilterSelect({
 
         {open && (
           <div
-            className={`absolute left-0 top-[calc(100%+8px)] z-50 ${menuWidth} overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)]`}>
+            className={`absolute left-0 top-[calc(100%+8px)] z-50 ${menuWidth} overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900`}>
             <div className="py-2">
               {options.map((option) => {
                 const isSelected = option === value;
@@ -249,8 +642,8 @@ function FilterSelect({
                     }}
                     className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition ${
                       isSelected
-                        ? "bg-cyan-50 font-semibold text-cyan-600"
-                        : "text-slate-700 hover:bg-slate-50"
+                        ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
+                        : "text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800"
                     }`}>
                     <span>{option}</span>
                     {isSelected && <Check className="h-4 w-4" />}
@@ -290,9 +683,9 @@ function RowsPerPageSelect({ value, onChange }) {
         onClick={() => setOpen((prev) => !prev)}
         className={`flex h-9 min-w-[64px] items-center justify-between rounded-xl border bg-white pl-3 pr-3 text-sm text-slate-700 transition ${
           open
-            ? "border-cyan-300 ring-2 ring-cyan-100"
-            : "border-slate-200 hover:border-slate-300"
-        }`}>
+            ? "border-cyan-300 ring-2 ring-cyan-100 dark:border-cyan-400 dark:ring-cyan-500/20"
+            : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
+        } dark:bg-slate-900 dark:text-slate-100`}>
         <span>{value}</span>
         <ChevronDown
           className={`ml-2 h-4 w-4 text-slate-400 transition-transform ${
@@ -302,7 +695,7 @@ function RowsPerPageSelect({ value, onChange }) {
       </button>
 
       {open && (
-        <div className="absolute bottom-[calc(100%+8px)] left-0 z-30 min-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)]">
+        <div className="absolute bottom-[calc(100%+8px)] left-0 z-30 min-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900">
           <div className="py-2">
             {options.map((option) => {
               const selected = option === value;
@@ -317,8 +710,8 @@ function RowsPerPageSelect({ value, onChange }) {
                   }}
                   className={`block w-full px-4 py-2 text-left text-sm transition ${
                     selected
-                      ? "bg-cyan-50 font-semibold text-cyan-600"
-                      : "text-slate-700 hover:bg-slate-50"
+                      ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
+                      : "text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800"
                   }`}>
                   {option}
                 </button>
@@ -337,7 +730,9 @@ function StatusBadge({ status }) {
   return (
     <span
       className={`inline-flex min-w-[76px] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${
-        isActive ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500"
+        isActive
+          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300"
+          : "bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-300"
       }`}>
       {status}
     </span>
@@ -351,7 +746,7 @@ function ActionButtons({ action }) {
     <div className="flex items-center gap-2">
       <button
         type="button"
-        className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500">
+        className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
         <Pencil className="h-3 w-3" />
         <span>Edit</span>
       </button>
@@ -359,7 +754,9 @@ function ActionButtons({ action }) {
       <button
         type="button"
         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
-          enable ? "bg-emerald-50 text-emerald-500" : "bg-red-50 text-red-500"
+          enable
+            ? "bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-300"
+            : "bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-300"
         }`}>
         {enable ? (
           <CheckCircle2 className="h-3 w-3" />
@@ -418,7 +815,6 @@ function AssignedGamePanel({ activeTab, setActiveTab }) {
   const [category, setCategory] = useState("All");
   const [gameName, setGameName] = useState("");
   const [status, setStatus] = useState("Active");
-
   const [selectedRows, setSelectedRows] = useState([]);
 
   const data = activeTab === "assigned" ? assignedGames : availableGames;
@@ -439,16 +835,16 @@ function AssignedGamePanel({ activeTab, setActiveTab }) {
     }
   };
 
-  const selectedCount = selectedRows.length;
-
   return (
-    <div className="bg-[#dfe9f7] px-6 py-6">
+    <div className="bg-[#dfe9f7] px-6 py-6 dark:bg-slate-900">
       <div className="mb-5 flex items-center gap-8">
         <button
           type="button"
           onClick={() => setActiveTab("assigned")}
           className={`relative pb-3 text-[15px] font-semibold ${
-            activeTab === "assigned" ? "text-slate-800" : "text-slate-500"
+            activeTab === "assigned"
+              ? "text-slate-800 dark:text-white"
+              : "text-slate-500 dark:text-slate-400"
           }`}>
           Assigned Game List
           {activeTab === "assigned" && (
@@ -460,7 +856,9 @@ function AssignedGamePanel({ activeTab, setActiveTab }) {
           type="button"
           onClick={() => setActiveTab("available")}
           className={`relative pb-3 text-[15px] font-semibold ${
-            activeTab === "available" ? "text-slate-800" : "text-slate-500"
+            activeTab === "available"
+              ? "text-slate-800 dark:text-white"
+              : "text-slate-500 dark:text-slate-400"
           }`}>
           Available Game List
           {activeTab === "available" && (
@@ -469,9 +867,9 @@ function AssignedGamePanel({ activeTab, setActiveTab }) {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-[28px] border border-emerald-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-        <div className="border-b border-cyan-300 bg-slate-50 px-6 py-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div className="overflow-hidden rounded-[28px] border border-emerald-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-emerald-500/40 dark:bg-slate-950">
+        <div className="border-b border-cyan-300 bg-slate-50 px-6 py-6 dark:border-cyan-500/30 dark:bg-slate-900">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_auto]">
             <FilterSelect
               label="Core Provider"
               options={["All", "NeoPlay", "Cardify", "PG Soft", "Pragmatic"]}
@@ -510,7 +908,7 @@ function AssignedGamePanel({ activeTab, setActiveTab }) {
 
               <button
                 type="button"
-                className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                 Reset
               </button>
             </div>
@@ -521,7 +919,7 @@ function AssignedGamePanel({ activeTab, setActiveTab }) {
           <div className="max-h-[220px] overflow-y-auto pr-2">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-700">
+                <tr className="text-left text-slate-700 dark:text-slate-200">
                   <th className="w-10 py-3">
                     <input
                       type="checkbox"
@@ -529,7 +927,7 @@ function AssignedGamePanel({ activeTab, setActiveTab }) {
                         selectedRows.length === data.length && data.length > 0
                       }
                       onChange={toggleAll}
-                      className="h-4 w-4 rounded border-slate-300"
+                      className="h-4 w-4 rounded border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900"
                     />
                   </th>
                   <th className="py-3 font-semibold">Provider</th>
@@ -543,13 +941,15 @@ function AssignedGamePanel({ activeTab, setActiveTab }) {
 
               <tbody>
                 {data.map((row, index) => (
-                  <tr key={`${row.gameId}-${index}`} className="text-slate-700">
+                  <tr
+                    key={`${row.gameId}-${index}`}
+                    className="text-slate-700 dark:text-slate-300">
                     <td className="py-3">
                       <input
                         type="checkbox"
                         checked={selectedRows.includes(index)}
                         onChange={() => toggleRow(index)}
-                        className="h-4 w-4 rounded border-slate-300"
+                        className="h-4 w-4 rounded border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900"
                       />
                     </td>
                     <td className="py-3">{row.provider}</td>
@@ -569,11 +969,13 @@ function AssignedGamePanel({ activeTab, setActiveTab }) {
       </div>
 
       <div className="mt-4 flex items-center justify-between">
-        <p className="text-sm text-slate-500">Selected: {selectedCount}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Selected: {selectedRows.length}
+        </p>
 
         <button
           type="button"
-          className="rounded-xl bg-emerald-200/70 px-6 py-3 text-sm font-semibold text-white">
+          className="rounded-xl bg-emerald-200/70 px-6 py-3 text-sm font-semibold text-white dark:bg-emerald-500/30">
           {activeTab === "assigned" ? "Unassign" : "Assign"}
         </button>
       </div>
@@ -594,7 +996,10 @@ function ClientManagementPage() {
     });
   }, []);
 
-  const [createdAt, setCreatedAt] = useState("");
+  const [createdAt, setCreatedAt] = useState({
+    start: null,
+    end: null,
+  });
   const [clientName, setClientName] = useState("");
   const [currency, setCurrency] = useState("All");
   const [status, setStatus] = useState("All");
@@ -645,17 +1050,17 @@ function ClientManagementPage() {
   };
 
   return (
-    <div className="overflow-hidden rounded-[20px] border border-cyan-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-      <div className="relative border-b border-cyan-300 bg-slate-50 px-5 py-5">
+    <div className="overflow-hidden rounded-[20px] border border-cyan-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-cyan-500/30 dark:bg-slate-950">
+      <div className="relative border-b border-cyan-300 bg-slate-50 px-5 py-5 dark:border-cyan-500/30 dark:bg-slate-900">
         <img
           src="/pattern3.png"
           alt=""
-          className="pointer-events-none absolute right-0 top-0 h-full w-60 object-cover opacity-15"
+          className="pointer-events-none absolute right-0 top-0 h-full w-60 object-cover opacity-35"
         />
 
         <div className="relative z-10">
           <div className="mb-4 flex items-center justify-between gap-4">
-            <h1 className="text-[30px] font-bold tracking-[-0.03em] text-slate-800">
+            <h1 className="text-[30px] font-bold tracking-[-0.03em] text-slate-800 dark:text-white">
               View Client List
             </h1>
 
@@ -667,36 +1072,37 @@ function ClientManagementPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-            <FilterInput
-              label="Created at"
-              placeholder="Select date range"
-              value={createdAt}
-              onChange={(e) => setCreatedAt(e.target.value)}
-            />
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end">
+            <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[1.05fr_1.15fr_1fr_1fr]">
+              <DateRangePickerInput
+                label="Created at"
+                value={createdAt}
+                onChange={setCreatedAt}
+              />
 
-            <FilterInput
-              label="Search by client name"
-              placeholder="Search by name/code"
-              value={clientName}
-              onChange={(e) => setClientName(e.target.value)}
-            />
+              <FilterInput
+                label="Search by client name"
+                placeholder="Search by name/code"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+              />
 
-            <FilterSelect
-              label="Default Currency"
-              options={["All", "USD", "VND", "EUR", "SGD", "THB"]}
-              value={currency}
-              onChange={setCurrency}
-            />
+              <FilterSelect
+                label="Default Currency"
+                options={["All", "USD", "VND", "EUR", "SGD", "THB"]}
+                value={currency}
+                onChange={setCurrency}
+              />
 
-            <FilterSelect
-              label="Status"
-              options={["All", "Active", "Inactive"]}
-              value={status}
-              onChange={setStatus}
-            />
+              <FilterSelect
+                label="Status"
+                options={["All", "Active", "Inactive"]}
+                value={status}
+                onChange={setStatus}
+              />
+            </div>
 
-            <div className="flex items-end gap-2">
+            <div className="flex shrink-0 items-end gap-2">
               <button
                 type="button"
                 className="inline-flex h-11 items-center gap-2 rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-5 text-sm font-semibold text-white shadow-sm">
@@ -706,7 +1112,7 @@ function ClientManagementPage() {
 
               <button
                 type="button"
-                className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                 Reset
               </button>
             </div>
@@ -717,8 +1123,8 @@ function ClientManagementPage() {
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="bg-slate-50 text-left text-slate-600">
-              <th className="w-[140px] px-4 py-4 font-semibold">Client ID</th>
+            <tr className="bg-slate-50 text-left text-slate-600 dark:bg-slate-900 dark:text-slate-300">
+              <th className="w-[160px] px-4 py-4 font-semibold">Client ID</th>
               <th className="px-4 py-4 font-semibold">Client Code</th>
               <th className="px-4 py-4 font-semibold">Client name</th>
               <th className="px-4 py-4 font-semibold">Default Currency</th>
@@ -734,15 +1140,13 @@ function ClientManagementPage() {
               const isExpanded = expandedClientId === row.id;
 
               return (
-                <>
-                  <tr
-                    key={row.id}
-                    className="border-t border-slate-100 text-slate-700">
+                <Fragment key={row.id}>
+                  <tr className="border-t border-slate-100 text-slate-700 dark:border-slate-800 dark:text-slate-300">
                     <td className="px-4 py-3">
                       <button
                         type="button"
                         onClick={() => handleToggleExpand(row.id)}
-                        className="inline-flex items-center gap-3 text-sky-500 transition hover:text-sky-600">
+                        className="inline-flex items-center gap-3 text-sky-500 transition hover:text-sky-600 dark:text-sky-400 dark:hover:text-sky-300">
                         <ChevronRight
                           className={`h-5 w-5 transition-transform duration-200 ${
                             isExpanded ? "rotate-90" : ""
@@ -767,7 +1171,9 @@ function ClientManagementPage() {
 
                   {isExpanded && (
                     <tr>
-                      <td colSpan={8} className="border-t border-slate-200 p-0">
+                      <td
+                        colSpan={8}
+                        className="border-t border-slate-200 p-0 dark:border-slate-800">
                         <AssignedGamePanel
                           activeTab={activeTab}
                           setActiveTab={setActiveTab}
@@ -775,14 +1181,14 @@ function ClientManagementPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               );
             })}
           </tbody>
         </table>
       </div>
 
-      <div className="flex flex-col gap-4 border-t border-slate-100 px-5 py-5 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 border-t border-slate-100 px-5 py-5 text-sm text-slate-400 md:flex-row md:items-center md:justify-between dark:border-slate-800 dark:text-slate-500">
         <div className="flex items-center gap-2">
           <span>Showing data</span>
 
@@ -796,15 +1202,15 @@ function ClientManagementPage() {
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-slate-500">
+        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
           <button
             type="button"
             onClick={handlePrevious}
             disabled={currentPage === 1}
             className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 transition ${
               currentPage === 1
-                ? "cursor-not-allowed text-slate-300"
-                : "text-slate-400 hover:text-slate-600"
+                ? "cursor-not-allowed text-slate-300 dark:text-slate-700"
+                : "text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
             }`}>
             <ArrowLeft className="h-4 w-4" />
             <span>Previous</span>
@@ -818,7 +1224,7 @@ function ClientManagementPage() {
                     key={`ellipsis-${item.direction}-${index}`}
                     type="button"
                     onClick={() => handleEllipsisClick(item.direction)}
-                    className="rounded-lg px-2 py-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
+                    className="rounded-lg px-2 py-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
                     ...
                   </button>
                 );
@@ -832,7 +1238,7 @@ function ClientManagementPage() {
                   className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 transition ${
                     currentPage === item.value
                       ? "bg-indigo-600 text-white"
-                      : "text-slate-700 hover:bg-slate-100"
+                      : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                   }`}>
                   {item.value}
                 </button>
@@ -846,8 +1252,8 @@ function ClientManagementPage() {
             disabled={currentPage === totalPages}
             className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 transition ${
               currentPage === totalPages
-                ? "cursor-not-allowed text-slate-300"
-                : "text-slate-700 hover:text-slate-900"
+                ? "cursor-not-allowed text-slate-300 dark:text-slate-700"
+                : "text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
             }`}>
             <span>Next</span>
             <ArrowRight className="h-4 w-4" />

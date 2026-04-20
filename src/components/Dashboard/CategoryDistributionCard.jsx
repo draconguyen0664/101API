@@ -104,8 +104,8 @@ function CategoryDistributionCard() {
 
   return (
     <div className="h-full rounded-2xl bg-linear-to-r from-cyan-400 via-sky-400 to-emerald-400 p-px">
-      <div className="flex h-full flex-col rounded-2xl bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-        <h3 className="mb-4 text-[18px] font-bold text-slate-800">
+      <div className="flex h-full flex-col rounded-2xl bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:bg-slate-950 dark:shadow-[0_8px_24px_rgba(2,6,23,0.45)]">
+        <h3 className="mb-4 text-[18px] font-bold text-slate-800 dark:text-white">
           Category Distribution
         </h3>
 
@@ -120,8 +120,9 @@ function CategoryDistributionCard() {
                   <path
                     d={slice.path}
                     fill={slice.color}
-                    stroke="#ffffff"
+                    stroke="rgba(255,255,255,0.95)"
                     strokeWidth="1.5"
+                    className="dark:stroke-slate-950"
                   />
                 )}
 
@@ -150,7 +151,7 @@ function CategoryDistributionCard() {
                   className="h-3 w-3 rounded-full"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-[13px] font-medium text-slate-700">
+                <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300">
                   {item.label}
                 </span>
               </div>

@@ -8,21 +8,21 @@ const logsByFilter = {
       provider: "RSG",
       message: "Gateway Timeout - Endpoint: /v1/seamless/bet [Trace: x8a91b]",
       code: "ERR-504",
-      color: "bg-orange-500",
+      color: "bg-orange-500 text-white dark:bg-orange-500 dark:text-white",
     },
     {
       time: "13:30:45",
       provider: "VIP_Bet",
       message: "Unauthorized - Invalid Signature [Trace: z92jk1]",
       code: "WRN-401",
-      color: "bg-amber-500",
+      color: "bg-amber-500 text-white dark:bg-amber-500 dark:text-white",
     },
     {
       time: "13:31:02",
       provider: "JILI",
       message: "Connection refused [Trace: m01xx9]",
       code: "ERR-502",
-      color: "bg-orange-500",
+      color: "bg-orange-500 text-white dark:bg-orange-500 dark:text-white",
     },
   ],
   "Last 7 days": [
@@ -31,21 +31,21 @@ const logsByFilter = {
       provider: "Pragmatic",
       message: "Request timeout [Trace: l19ps2]",
       code: "ERR-504",
-      color: "bg-orange-500",
+      color: "bg-orange-500 text-white dark:bg-orange-500 dark:text-white",
     },
     {
       time: "10:42:18",
       provider: "NetEnt",
       message: "Unauthorized - Token invalid [Trace: f81dk7]",
       code: "WRN-401",
-      color: "bg-amber-500",
+      color: "bg-amber-500 text-white dark:bg-amber-500 dark:text-white",
     },
     {
       time: "14:05:22",
       provider: "PG Soft",
       message: "Connection refused [Trace: p33mj4]",
       code: "ERR-502",
-      color: "bg-orange-500",
+      color: "bg-orange-500 text-white dark:bg-orange-500 dark:text-white",
     },
   ],
   "Last 30 days": [
@@ -54,21 +54,20 @@ const logsByFilter = {
       provider: "RSG",
       message: "Service unavailable [Trace: q11we8]",
       code: "ERR-503",
-      color: "bg-orange-500",
+      color: "bg-orange-500 text-white dark:bg-orange-500 dark:text-white",
     },
     {
       time: "12:09:47",
       provider: "Play'n GO",
       message: "Invalid signature [Trace: z77kk2]",
       code: "WRN-401",
-      color: "bg-amber-500",
+      color: "bg-amber-500 text-white dark:bg-amber-500 dark:text-white",
     },
     {
       time: "16:44:12",
       provider: "JILI",
       message: "Connection refused [Trace: n02xp5]",
-      code: "ERR-502",
-      color: "bg-orange-500",
+      code: "bg-orange-500 text-white dark:bg-orange-500 dark:text-white",
     },
   ],
 };
@@ -79,9 +78,9 @@ function RealTimeErrorLogCard() {
 
   return (
     <div className="h-full rounded-2xl bg-linear-to-r from-cyan-400 via-sky-400 to-emerald-400 p-px">
-      <div className="h-full rounded-2xl bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+      <div className="h-full rounded-2xl bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:bg-slate-950 dark:shadow-[0_8px_24px_rgba(2,6,23,0.45)]">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h3 className="text-[18px] font-bold text-slate-800">
+          <h3 className="text-[18px] font-bold text-slate-800 dark:text-white">
             Real-time Error Log
           </h3>
 
@@ -98,25 +97,25 @@ function RealTimeErrorLogCard() {
           {logs.map((log, index) => (
             <div key={`${log.time}-${log.provider}`} className="flex gap-4">
               <div className="flex flex-col items-center">
-                <span className="mt-1 h-2.5 w-2.5 rounded-full border-2 border-cyan-400 bg-white" />
+                <span className="mt-1 h-2.5 w-2.5 rounded-full border-2 border-cyan-400 bg-white dark:bg-slate-950" />
                 {index !== logs.length - 1 && (
-                  <span className="mt-1 h-full w-px bg-slate-200" />
+                  <span className="mt-1 h-full w-px bg-slate-200 dark:bg-slate-700" />
                 )}
               </div>
 
               <div className="flex-1">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[14px] font-semibold text-slate-800">
+                    <p className="text-[14px] font-semibold text-slate-800 dark:text-slate-100">
                       [{log.time}] [Provider: {log.provider}]
                     </p>
-                    <p className="mt-1 text-[14px] leading-6 text-slate-700">
+                    <p className="mt-1 text-[14px] leading-6 text-slate-700 dark:text-slate-300">
                       {log.message}
                     </p>
                   </div>
 
                   <span
-                    className={`shrink-0 rounded-full ${log.color} px-3 py-1 text-[11px] font-bold text-white`}>
+                    className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-bold ${log.color}`}>
                     {log.code}
                   </span>
                 </div>

@@ -46,9 +46,11 @@ function Top5GamesCard() {
 
   return (
     <div className="h-full rounded-2xl bg-linear-to-r from-cyan-400 via-sky-400 to-emerald-400 p-px">
-      <div className="h-full rounded-2xl bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+      <div className="h-full rounded-2xl bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:bg-slate-950 dark:shadow-[0_8px_24px_rgba(2,6,23,0.45)]">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h3 className="text-[18px] font-bold text-slate-800">Top 5 Games</h3>
+          <h3 className="text-[18px] font-bold text-slate-800 dark:text-white">
+            Top 5 Games
+          </h3>
 
           <div className="w-[110px]">
             <DashboardSelect
@@ -71,21 +73,21 @@ function Top5GamesCard() {
               }}>
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-300 text-white">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-300 text-white dark:bg-slate-700 dark:text-slate-200">
                     <Gamepad2 className="h-3 w-3" />
                   </div>
 
-                  <span className="truncate text-[13px] font-semibold text-slate-700">
+                  <span className="truncate text-[13px] font-semibold text-slate-700 dark:text-slate-200">
                     {game.name}
                   </span>
                 </div>
 
-                <span className="shrink-0 text-[13px] font-bold text-slate-700">
+                <span className="shrink-0 text-[13px] font-bold text-slate-700 dark:text-slate-100">
                   {game.value.toLocaleString()}
                 </span>
               </div>
 
-              <div className="h-[3px] w-full overflow-hidden rounded-full bg-emerald-100">
+              <div className="h-[3px] w-full overflow-hidden rounded-full bg-emerald-100 dark:bg-slate-800">
                 <div
                   className="h-full rounded-full bg-linear-to-r from-sky-400 to-emerald-400 transition-[width] duration-700 ease-out"
                   style={{

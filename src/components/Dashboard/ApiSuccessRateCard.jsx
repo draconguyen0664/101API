@@ -26,6 +26,36 @@ const valueToAngle = (value) => {
   return START_ANGLE + (safe / 100) * (END_ANGLE - START_ANGLE);
 };
 
+function useDarkModeClass() {
+  const [isDark, setIsDark] = useState(
+    () =>
+      typeof document !== "undefined" &&
+      document.documentElement.classList.contains("dark"),
+  );
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const root = document.documentElement;
+
+    const update = () => {
+      setIsDark(root.classList.contains("dark"));
+    };
+
+    update();
+
+    const observer = new MutationObserver(update);
+    observer.observe(root, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+}
+
 function ApiSuccessRateCard({
   title = "API Success Rate (%)",
   date = "13/04/2026",
@@ -34,6 +64,7 @@ function ApiSuccessRateCard({
 }) {
   const targetValue = clamp(value, 0, 100);
   const [animatedValue, setAnimatedValue] = useState(0);
+  const isDark = useDarkModeClass();
 
   const gradientId = useId().replace(/:/g, "");
   const filterId = useId().replace(/:/g, "");
@@ -124,15 +155,34 @@ function ApiSuccessRateCard({
     };
   });
 
+  const tickMinorColor = isDark ? "#475569" : "#cbd5e1";
+  const tickMajorColor = isDark ? "#94a3b8" : "#94a3b8";
+  const labelColor = isDark ? "#cbd5e1" : "#334155";
+  const valueColor = isDark ? "#f8fafc" : "#0f172a";
+  const needleCenterShadow = isDark ? "#000000" : "#94a3b8";
+  const needleCenterFill = "#22c55e";
+  const needleCenterDot = isDark ? "#f8fafc" : "#ffffff";
+  const cardBg = isDark ? "bg-slate-950" : "bg-white";
+  const cardShadow = isDark
+    ? "shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+    : "shadow-[0_8px_24px_rgba(15,23,42,0.04)]";
+  const titleColor = isDark ? "text-slate-100" : "text-slate-800";
+  const dateBoxClasses = isDark
+    ? "border-slate-700 bg-slate-900 text-slate-200"
+    : "border-slate-200 bg-slate-50 text-slate-700";
+
   return (
     <div className="h-full rounded-2xl bg-linear-to-r from-cyan-400 via-sky-400 to-emerald-400 p-px">
-      <div className="flex h-full flex-col rounded-2xl bg-[#f6f6f6] px-5 py-4 shadow-[0_2px_12px_rgba(15,23,42,0.04)]">
+      <div
+        className={`flex h-full flex-col rounded-2xl px-5 py-4 ${cardBg} ${cardShadow}`}>
         <div className="mb-3 flex items-start justify-between gap-3">
-          <h3 className="pt-1 text-[18px] font-semibold tracking-[-0.02em] text-[#16233b]">
+          <h3
+            className={`pt-1 text-[18px] font-semibold tracking-[-0.02em] ${titleColor}`}>
             {title}
           </h3>
 
-          <div className="rounded-[14px] border border-[#cfd6df] bg-[#fafafa] px-4 py-2 text-[14px] font-medium text-[#16233b]">
+          <div
+            className={`rounded-[14px] border px-4 py-2 text-[14px] font-medium ${dateBoxClasses}`}>
             {date}
           </div>
         </div>
@@ -150,7 +200,7 @@ function ApiSuccessRateCard({
                 y2="0%">
                 <stop offset="0%" stopColor="#ef4444" />
                 <stop offset="46%" stopColor="#f59e0b" />
-                <stop offset="100%" stopColor="#48c26b" />
+                <stop offset="100%" stopColor="#22c55e" />
               </linearGradient>
 
               <filter
@@ -161,9 +211,9 @@ function ApiSuccessRateCard({
                 height="200%">
                 <feDropShadow
                   dx="0"
-                  dy="1"
-                  stdDeviation="1.5"
-                  floodOpacity="0.18"
+                  dy="2"
+                  stdDeviation="2.5"
+                  floodOpacity={isDark ? "0.4" : "0.22"}
                 />
               </filter>
             </defs>
@@ -183,7 +233,7 @@ function ApiSuccessRateCard({
                 y1={tick.inner.y}
                 x2={tick.outer.x}
                 y2={tick.outer.y}
-                stroke="#d4d4d8"
+                stroke={tick.isMajor ? tickMajorColor : tickMinorColor}
                 strokeWidth={tick.isMajor ? 2.6 : 1.6}
                 strokeLinecap="round"
               />
@@ -196,7 +246,11 @@ function ApiSuccessRateCard({
                 y={item.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                style={{ fontSize: 11, fontWeight: 500, fill: "#2f3b52" }}>
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  fill: labelColor,
+                }}>
                 {item.label}
               </text>
             ))}
@@ -207,18 +261,27 @@ function ApiSuccessRateCard({
                 y1={cy}
                 x2={needleTip.x}
                 y2={needleTip.y}
-                stroke="#4cae50"
+                stroke="#4ade80"
                 strokeWidth="8"
                 strokeLinecap="round"
               />
             </g>
 
-            <circle cx={cx} cy={cy} r="13" fill="#000" opacity="0.08" />
-            <circle cx={cx} cy={cy} r="9" fill="#78bf72" />
-            <circle cx={cx} cy={cy} r="3.2" fill="#ffffff" />
+            <circle
+              cx={cx}
+              cy={cy}
+              r="13"
+              fill={needleCenterShadow}
+              opacity="0.25"
+            />
+            <circle cx={cx} cy={cy} r="9" fill={needleCenterFill} />
+            <circle cx={cx} cy={cy} r="3.2" fill={needleCenterDot} />
           </svg>
 
-          <div className="-mt-2 pb-2 text-center text-[48px] font-bold leading-none tracking-[-0.04em] text-[#16233b]">
+          <div
+            className={`-mt-2 pb-2 text-center text-[48px] font-bold leading-none tracking-[-0.04em] ${
+              isDark ? "text-slate-50" : "text-slate-900"
+            }`}>
             {displayValue}%
           </div>
         </div>

@@ -15,7 +15,7 @@ const stats = [
     value: "1,248",
     icon: Gamepad2,
     iconGradient: "from-sky-500 to-emerald-400",
-    accent: "bg-emerald-500",
+    accent: "bg-emerald-500 dark:bg-emerald-400",
     bgImage: "/pattern1.png",
     showDot: true,
   },
@@ -25,7 +25,7 @@ const stats = [
     value: "342",
     icon: Users,
     iconGradient: "from-sky-500 to-emerald-400",
-    accent: "bg-emerald-500",
+    accent: "bg-emerald-500 dark:bg-emerald-400",
     bgImage: "/pattern2.png",
     showDot: true,
   },
@@ -35,7 +35,7 @@ const stats = [
     value: "28",
     icon: Building2,
     iconGradient: "from-sky-500 to-emerald-400",
-    accent: "bg-emerald-500",
+    accent: "bg-emerald-500 dark:bg-emerald-400",
     bgImage: "/pattern3.png",
     showDot: true,
   },
@@ -45,7 +45,7 @@ const stats = [
     value: "15",
     icon: Shield,
     iconGradient: "from-sky-500 to-emerald-400",
-    accent: "bg-emerald-500",
+    accent: "bg-emerald-500 dark:bg-emerald-400",
     bgImage: "/pattern4.png",
     showDot: true,
   },
@@ -55,7 +55,7 @@ const stats = [
     value: "$10,001",
     icon: WalletCards,
     iconGradient: "from-sky-500 to-emerald-400",
-    accent: "bg-emerald-500",
+    accent: "bg-emerald-500 dark:bg-emerald-400",
     change: "-5.4%",
     bgImage: "/pattern5.png",
     showDot: false,
@@ -70,12 +70,12 @@ function CardDecoration({ image }) {
       <img
         src={image}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover opacity-100 dark:opacity-80"
       />
 
-      <div className="absolute inset-0 bg-white/10" />
+      <div className="absolute inset-0 bg-white/10 dark:bg-slate-950/30" />
 
-      <div className="absolute inset-0 bg-linear-to-r from-white/12 via-white/6 to-white/0" />
+      <div className="absolute inset-0 bg-linear-to-r from-white/12 via-white/6 to-white/0 dark:from-slate-950/20 dark:via-slate-950/10 dark:to-transparent" />
     </div>
   );
 }
@@ -85,7 +85,7 @@ function StatsCard({ item }) {
 
   return (
     <div className="rounded-2xl bg-linear-to-r from-cyan-400 via-sky-400 to-emerald-400 p-px transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="relative min-h-[160px] overflow-hidden rounded-2xl bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+      <div className="relative min-h-[160px] overflow-hidden rounded-2xl bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:bg-slate-950 dark:shadow-[0_8px_24px_rgba(2,6,23,0.45)]">
         <CardDecoration image={item.bgImage} />
 
         <div className="relative z-10 flex h-full flex-col justify-between">
@@ -97,7 +97,7 @@ function StatsCard({ item }) {
           </div>
 
           <div className="mt-2">
-            <p className="mb-3 text-[14px] font-medium text-slate-500">
+            <p className="mb-3 text-[14px] font-medium text-slate-500 dark:text-slate-300">
               {item.title}
             </p>
 
@@ -107,13 +107,13 @@ function StatsCard({ item }) {
                   <span className={`h-2.5 w-2.5 rounded-full ${item.accent}`} />
                 )}
 
-                <h3 className="text-[30px] font-bold tracking-wide text-slate-800">
+                <h3 className="text-[30px] font-bold tracking-wide text-slate-800 dark:text-white">
                   {item.value}
                 </h3>
               </div>
 
               {item.change && (
-                <div className="inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1.5 text-sm font-medium text-red-500">
+                <div className="inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1.5 text-sm font-medium text-red-500 dark:bg-red-500/10 dark:text-red-300">
                   <TrendingDown className="h-3 w-3" />
                   <span>{item.change}</span>
                 </div>

@@ -99,31 +99,75 @@ const yearlyData = {
   ],
 };
 
-function CustomTooltip({ active, payload, label }) {
+function useDarkModeClass() {
+  const [isDark, setIsDark] = useState(
+    () =>
+      typeof document !== "undefined" &&
+      document.documentElement.classList.contains("dark"),
+  );
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const root = document.documentElement;
+
+    const update = () => {
+      setIsDark(root.classList.contains("dark"));
+    };
+
+    update();
+
+    const observer = new MutationObserver(update);
+    observer.observe(root, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+}
+
+function CustomTooltip({ active, payload, label, isDark }) {
   if (!active || !payload?.length) return null;
 
   const ggr = payload.find((item) => item.dataKey === "ggr");
   const netIncome = payload.find((item) => item.dataKey === "netIncome");
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 shadow-lg">
-      <div className="mb-2 text-center text-[14px] font-bold text-slate-600">
+    <div
+      className={`rounded-2xl border px-4 py-3 shadow-lg ${
+        isDark
+          ? "border-slate-700 bg-slate-900/95"
+          : "border-slate-200 bg-white/95"
+      }`}>
+      <div
+        className={`mb-2 text-center text-[14px] font-bold ${
+          isDark ? "text-slate-300" : "text-slate-600"
+        }`}>
         {label}
       </div>
 
       <div className="space-y-2 text-[14px]">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-[#34a853]" />
-          <span className="text-slate-600">GGR:</span>
-          <span className="font-bold text-slate-800">
+          <span className={isDark ? "text-slate-300" : "text-slate-600"}>
+            GGR:
+          </span>
+          <span
+            className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>
             ${ggr?.value?.toLocaleString()}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-[#f29900]" />
-          <span className="text-slate-600">Net Income:</span>
-          <span className="font-bold text-slate-800">
+          <span className={isDark ? "text-slate-300" : "text-slate-600"}>
+            Net Income:
+          </span>
+          <span
+            className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>
             ${netIncome?.value?.toLocaleString()}
           </span>
         </div>
@@ -132,9 +176,12 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-function CustomLegend() {
+function CustomLegend({ isDark }) {
   return (
-    <div className="flex items-center gap-6 pr-2 text-[12px] font-medium text-slate-700">
+    <div
+      className={`flex items-center gap-6 pr-2 text-[12px] font-medium ${
+        isDark ? "text-slate-300" : "text-slate-700"
+      }`}>
       <div className="flex items-center gap-2">
         <span className="h-2.5 w-2.5 rounded-full bg-[#34a853]" />
         <span>GGR</span>
@@ -148,7 +195,7 @@ function CustomLegend() {
   );
 }
 
-function YearPicker({ value, onChange }) {
+function YearPicker({ value, onChange, isDark }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [decadeStart, setDecadeStart] = useState(Math.floor(value / 10) * 10);
@@ -187,34 +234,48 @@ function YearPicker({ value, onChange }) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-[13px] text-slate-700 transition hover:bg-slate-100">
+        className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-[13px] transition ${
+          isDark
+            ? "border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800"
+            : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+        }`}>
         <span>{value}</span>
         <CalendarDays className="h-4 w-4" />
       </button>
 
       {mounted && (
         <div
-          className={`absolute right-0 top-[calc(100%+8px)] z-50 w-[260px] origin-top-right overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.14)] transition-all duration-200 ${
+          className={`absolute right-0 top-[calc(100%+8px)] z-50 w-[280px] origin-top-right overflow-hidden rounded-[18px] border shadow-[0_16px_40px_rgba(15,23,42,0.14)] transition-all duration-200 ${
             open
               ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
               : "pointer-events-none -translate-y-1 scale-95 opacity-0"
-          }`}>
-          <div className="flex items-center justify-between border-b border-slate-200 px-3.5 py-3">
+          } ${isDark ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`}>
+          <div
+            className={`flex items-center justify-between border-b px-3.5 py-3 ${isDark ? "border-slate-700" : "border-slate-200"}`}>
             <button
               type="button"
               onClick={() => setDecadeStart((prev) => prev - 10)}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50">
+              className={`flex h-9 w-9 items-center justify-center rounded-xl border transition ${
+                isDark
+                  ? "border-slate-700 text-slate-100 hover:bg-slate-800"
+                  : "border-slate-200 text-slate-700 hover:bg-slate-50"
+              }`}>
               <ChevronLeft className="h-4 w-4" />
             </button>
 
-            <div className="text-[15px] font-bold text-slate-800">
+            <div
+              className={`text-[15px] font-bold ${isDark ? "text-white" : "text-slate-800"}`}>
               {decadeStart} - {decadeStart + 9}
             </div>
 
             <button
               type="button"
               onClick={() => setDecadeStart((prev) => prev + 10)}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50">
+              className={`flex h-9 w-9 items-center justify-center rounded-xl border transition ${
+                isDark
+                  ? "border-slate-700 text-slate-100 hover:bg-slate-800"
+                  : "border-slate-200 text-slate-700 hover:bg-slate-50"
+              }`}>
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -236,8 +297,12 @@ function YearPicker({ value, onChange }) {
                     isSelected
                       ? "bg-linear-to-r from-sky-400 to-emerald-400 text-white shadow-sm"
                       : isOutside
-                        ? "text-slate-400"
-                        : "text-slate-800 hover:bg-slate-50"
+                        ? isDark
+                          ? "text-slate-600"
+                          : "text-slate-400"
+                        : isDark
+                          ? "text-slate-100 hover:bg-slate-800"
+                          : "text-slate-800 hover:bg-slate-50"
                   }`}>
                   {year}
                 </button>
@@ -253,29 +318,39 @@ function YearPicker({ value, onChange }) {
 function SystemNetIncomeGrowthCard() {
   const [selectedYear, setSelectedYear] = useState(2026);
   const [hoveredMonth, setHoveredMonth] = useState(null);
+  const isDark = useDarkModeClass();
 
   const data = yearlyData[selectedYear] || yearlyData[2026];
 
+  const axisColor = isDark ? "#CBD5E1" : "#334155";
+  const gridColor = isDark ? "#334155" : "#e5e7eb";
+  const refLineColor = isDark ? "#475569" : "#d1d5db";
+  const activeDotStroke = isDark ? "#0f172a" : "#ffffff";
+
   return (
     <div className="h-full rounded-2xl bg-linear-to-r from-cyan-400 via-sky-400 to-emerald-400 p-px">
-      <div className="h-full rounded-2xl bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <h3 className="text-[18px] font-bold text-slate-800">
+      <div className="h-full rounded-2xl bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:bg-slate-950 dark:shadow-[0_8px_24px_rgba(2,6,23,0.45)]">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h3 className="text-[18px] font-bold text-slate-800 dark:text-white">
             System Net Income Growth
           </h3>
 
           <div className="flex items-center gap-3">
-            <CustomLegend />
-            <YearPicker value={selectedYear} onChange={setSelectedYear} />
+            <CustomLegend isDark={isDark} />
+            <YearPicker
+              value={selectedYear}
+              onChange={setSelectedYear}
+              isDark={isDark}
+            />
           </div>
         </div>
 
-        <div className="h-[220px]">
+        <div className="h-62.5">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               key={selectedYear}
               data={data}
-              margin={{ top: 12, right: 8, left: 0, bottom: 0 }}
+              margin={{ top: 14, right: 12, left: 6, bottom: 8 }}
               onMouseMove={(state) => {
                 if (state?.isTooltipActive && state?.activeLabel) {
                   setHoveredMonth(state.activeLabel);
@@ -286,12 +361,20 @@ function SystemNetIncomeGrowthCard() {
               onMouseLeave={() => setHoveredMonth(null)}>
               <defs>
                 <linearGradient id="ggrFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#34a853" stopOpacity={0.18} />
+                  <stop
+                    offset="0%"
+                    stopColor="#34a853"
+                    stopOpacity={isDark ? 0.26 : 0.18}
+                  />
                   <stop offset="100%" stopColor="#34a853" stopOpacity={0.02} />
                 </linearGradient>
 
                 <linearGradient id="incomeFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f29900" stopOpacity={0.18} />
+                  <stop
+                    offset="0%"
+                    stopColor="#f29900"
+                    stopOpacity={isDark ? 0.26 : 0.18}
+                  />
                   <stop offset="100%" stopColor="#f29900" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
@@ -299,14 +382,19 @@ function SystemNetIncomeGrowthCard() {
               <CartesianGrid
                 vertical={false}
                 strokeDasharray="3 3"
-                stroke="#e5e7eb"
+                stroke={gridColor}
               />
 
               <XAxis
                 dataKey="month"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: "#334155", fontSize: 12 }}
+                interval={0}
+                height={42}
+                tickMargin={10}
+                minTickGap={16}
+                padding={{ left: 8, right: 8 }}
+                tick={{ fill: axisColor, fontSize: 11 }}
               />
 
               <YAxis
@@ -315,15 +403,15 @@ function SystemNetIncomeGrowthCard() {
                 ticks={[0, 200, 400, 600, 800, 1000]}
                 domain={[0, 1000]}
                 tickFormatter={(value) => `$${value.toLocaleString()}`}
-                tick={{ fill: "#334155", fontSize: 12 }}
+                tick={{ fill: axisColor, fontSize: 12 }}
               />
 
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip isDark={isDark} />} />
 
               {hoveredMonth && (
                 <ReferenceLine
                   x={hoveredMonth}
-                  stroke="#d1d5db"
+                  stroke={refLineColor}
                   strokeDasharray="3 3"
                   strokeWidth={1}
                 />
@@ -353,7 +441,7 @@ function SystemNetIncomeGrowthCard() {
                 type="monotone"
                 dataKey="ggr"
                 stroke="#34a853"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 dot={false}
                 isAnimationActive
                 animationDuration={1000}
@@ -361,7 +449,7 @@ function SystemNetIncomeGrowthCard() {
                 activeDot={{
                   r: 5,
                   fill: "#34a853",
-                  stroke: "#ffffff",
+                  stroke: activeDotStroke,
                   strokeWidth: 2,
                 }}
               />
@@ -370,7 +458,7 @@ function SystemNetIncomeGrowthCard() {
                 type="monotone"
                 dataKey="netIncome"
                 stroke="#f29900"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 dot={false}
                 isAnimationActive
                 animationDuration={1200}
@@ -378,7 +466,7 @@ function SystemNetIncomeGrowthCard() {
                 activeDot={{
                   r: 5,
                   fill: "#f29900",
-                  stroke: "#ffffff",
+                  stroke: activeDotStroke,
                   strokeWidth: 2,
                 }}
               />
