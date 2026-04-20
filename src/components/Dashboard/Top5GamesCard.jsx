@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Gamepad2 } from "lucide-react";
+import DashboardSelect from "../Common/DashboardSelect";
 
 const gameDataByFilter = {
   Today: [
@@ -35,28 +36,27 @@ function Top5GamesCard() {
 
   useEffect(() => {
     setAnimated(false);
-    const frame = requestAnimationFrame(() => {
-      const timeout = setTimeout(() => setAnimated(true), 40);
-      return () => clearTimeout(timeout);
-    });
 
-    return () => cancelAnimationFrame(frame);
+    const timeout = setTimeout(() => {
+      setAnimated(true);
+    }, 40);
+
+    return () => clearTimeout(timeout);
   }, [filter]);
 
   return (
     <div className="h-full rounded-2xl bg-linear-to-r from-cyan-400 via-sky-400 to-emerald-400 p-px">
       <div className="h-full rounded-2xl bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between gap-3">
           <h3 className="text-[18px] font-bold text-slate-800">Top 5 Games</h3>
 
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-[13px] text-slate-700 outline-none">
-            <option>Today</option>
-            <option>This week</option>
-            <option>This month</option>
-          </select>
+          <div className="w-[110px]">
+            <DashboardSelect
+              value={filter}
+              options={["Today", "This week", "This month"]}
+              onChange={setFilter}
+            />
+          </div>
         </div>
 
         <div className="space-y-5">

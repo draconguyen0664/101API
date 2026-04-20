@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import DashboardSelect from "../Common/DashboardSelect";
 
 const chartDataByFilter = {
   Today: [
@@ -60,19 +61,18 @@ function Top5RevenueClientsCard() {
   return (
     <div className="h-full rounded-2xl bg-linear-to-r from-cyan-400 via-sky-400 to-emerald-400 p-px">
       <div className="h-full rounded-2xl bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <h3 className="text-[18px] font-bold text-slate-800">
             Top 5 Revenue Clients
           </h3>
 
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-[13px] text-slate-700 outline-none">
-            <option>Today</option>
-            <option>This week</option>
-            <option>This month</option>
-          </select>
+          <div className="w-[110px]">
+            <DashboardSelect
+              value={filter}
+              options={["Today", "This week", "This month"]}
+              onChange={setFilter}
+            />
+          </div>
         </div>
 
         <div className="mt-3 h-[210px]">

@@ -1,28 +1,82 @@
-const logs = [
-  {
-    time: "13:30:12",
-    provider: "RSG",
-    message: "Gateway Timeout - Endpoint: /v1/seamless/bet [Trace: x8a91b]",
-    code: "ERR-504",
-    color: "bg-orange-500",
-  },
-  {
-    time: "13:30:45",
-    provider: "VIP_Bet",
-    message: "Unauthorized - Invalid Signature [Trace: z92jk1]",
-    code: "WRN-401",
-    color: "bg-amber-500",
-  },
-  {
-    time: "13:31:02",
-    provider: "JILI",
-    message: "Connection refused [Trace: m01xx9]",
-    code: "ERR-502",
-    color: "bg-orange-500",
-  },
-];
+import { useState } from "react";
+import DashboardSelect from "../Common/DashboardSelect";
+
+const logsByFilter = {
+  Today: [
+    {
+      time: "13:30:12",
+      provider: "RSG",
+      message: "Gateway Timeout - Endpoint: /v1/seamless/bet [Trace: x8a91b]",
+      code: "ERR-504",
+      color: "bg-orange-500",
+    },
+    {
+      time: "13:30:45",
+      provider: "VIP_Bet",
+      message: "Unauthorized - Invalid Signature [Trace: z92jk1]",
+      code: "WRN-401",
+      color: "bg-amber-500",
+    },
+    {
+      time: "13:31:02",
+      provider: "JILI",
+      message: "Connection refused [Trace: m01xx9]",
+      code: "ERR-502",
+      color: "bg-orange-500",
+    },
+  ],
+  "Last 7 days": [
+    {
+      time: "09:15:33",
+      provider: "Pragmatic",
+      message: "Request timeout [Trace: l19ps2]",
+      code: "ERR-504",
+      color: "bg-orange-500",
+    },
+    {
+      time: "10:42:18",
+      provider: "NetEnt",
+      message: "Unauthorized - Token invalid [Trace: f81dk7]",
+      code: "WRN-401",
+      color: "bg-amber-500",
+    },
+    {
+      time: "14:05:22",
+      provider: "PG Soft",
+      message: "Connection refused [Trace: p33mj4]",
+      code: "ERR-502",
+      color: "bg-orange-500",
+    },
+  ],
+  "Last 30 days": [
+    {
+      time: "08:21:01",
+      provider: "RSG",
+      message: "Service unavailable [Trace: q11we8]",
+      code: "ERR-503",
+      color: "bg-orange-500",
+    },
+    {
+      time: "12:09:47",
+      provider: "Play'n GO",
+      message: "Invalid signature [Trace: z77kk2]",
+      code: "WRN-401",
+      color: "bg-amber-500",
+    },
+    {
+      time: "16:44:12",
+      provider: "JILI",
+      message: "Connection refused [Trace: n02xp5]",
+      code: "ERR-502",
+      color: "bg-orange-500",
+    },
+  ],
+};
 
 function RealTimeErrorLogCard() {
+  const [filter, setFilter] = useState("Today");
+  const logs = logsByFilter[filter] || logsByFilter.Today;
+
   return (
     <div className="h-full rounded-2xl bg-linear-to-r from-cyan-400 via-sky-400 to-emerald-400 p-px">
       <div className="h-full rounded-2xl bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
@@ -31,11 +85,13 @@ function RealTimeErrorLogCard() {
             Real-time Error Log
           </h3>
 
-          <select className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-[13px] text-slate-700 outline-none">
-            <option>Today</option>
-            <option>Last 7 days</option>
-            <option>Last 30 days</option>
-          </select>
+          <div className="w-[130px]">
+            <DashboardSelect
+              value={filter}
+              options={["Today", "Last 7 days", "Last 30 days"]}
+              onChange={setFilter}
+            />
+          </div>
         </div>
 
         <div className="space-y-5">
