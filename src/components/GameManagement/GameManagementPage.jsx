@@ -6,9 +6,14 @@ import {
   ChevronDown,
   CircleOff,
   Gamepad2,
+  ImagePlus,
   Pencil,
+  Save,
   Search,
+  X,
 } from "lucide-react";
+
+const STORAGE_KEY = "game-management-rows-v3";
 
 const baseGames = [
   {
@@ -19,6 +24,8 @@ const baseGames = [
     category: "Slot",
     globalStatus: "Inactive",
     clientEnable: 99,
+    iconFileName: "",
+    iconPreview: "",
   },
   {
     id: "G-002",
@@ -28,6 +35,8 @@ const baseGames = [
     category: "Live Casino",
     globalStatus: "Active",
     clientEnable: 0,
+    iconFileName: "",
+    iconPreview: "",
   },
   {
     id: "G-003",
@@ -37,6 +46,8 @@ const baseGames = [
     category: "Table",
     globalStatus: "Active",
     clientEnable: 0,
+    iconFileName: "",
+    iconPreview: "",
   },
   {
     id: "G-004",
@@ -46,6 +57,8 @@ const baseGames = [
     category: "Slot",
     globalStatus: "Active",
     clientEnable: 110,
+    iconFileName: "",
+    iconPreview: "",
   },
   {
     id: "G-005",
@@ -55,6 +68,8 @@ const baseGames = [
     category: "Live Casino",
     globalStatus: "Inactive",
     clientEnable: 0,
+    iconFileName: "",
+    iconPreview: "",
   },
   {
     id: "G-006",
@@ -64,6 +79,8 @@ const baseGames = [
     category: "Table",
     globalStatus: "Active",
     clientEnable: 0,
+    iconFileName: "",
+    iconPreview: "",
   },
   {
     id: "G-007",
@@ -73,6 +90,8 @@ const baseGames = [
     category: "Arcade",
     globalStatus: "Active",
     clientEnable: 0,
+    iconFileName: "",
+    iconPreview: "",
   },
   {
     id: "G-008",
@@ -82,6 +101,8 @@ const baseGames = [
     category: "Slot",
     globalStatus: "Active",
     clientEnable: 0,
+    iconFileName: "",
+    iconPreview: "",
   },
   {
     id: "G-009",
@@ -91,6 +112,8 @@ const baseGames = [
     category: "Arcade",
     globalStatus: "Active",
     clientEnable: 0,
+    iconFileName: "",
+    iconPreview: "",
   },
   {
     id: "G-010",
@@ -100,6 +123,8 @@ const baseGames = [
     category: "Slot",
     globalStatus: "Inactive",
     clientEnable: 99,
+    iconFileName: "",
+    iconPreview: "",
   },
 ];
 
@@ -116,7 +141,42 @@ function buildGames(total = 152) {
   });
 }
 
-function FilterSelect({ label, value, options, onChange, className = "" }) {
+function loadRowsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return buildGames(152);
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return buildGames(152);
+    }
+
+    return parsed;
+  } catch {
+    return buildGames(152);
+  }
+}
+
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Failed to read file"));
+
+    reader.readAsDataURL(file);
+  });
+}
+
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+  className = "",
+  menuClassName = "",
+  disabled = false,
+}) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -131,34 +191,51 @@ function FilterSelect({ label, value, options, onChange, className = "" }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (disabled) setOpen(false);
+  }, [disabled]);
+
   return (
-    <div className={`min-w-0 ${className}`} ref={wrapperRef}>
-      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-        {label}
-      </label>
+    <div className={`relative min-w-0 ${className}`} ref={wrapperRef}>
+      {label && (
+        <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+          {label}
+        </label>
+      )}
 
       <div className="relative">
         <button
           type="button"
-          onClick={() => setOpen((prev) => !prev)}
+          disabled={disabled}
+          onClick={() => {
+            if (!disabled) setOpen((prev) => !prev);
+          }}
           className={`flex h-11 w-full items-center justify-between rounded-xl border px-4 text-sm transition-all ${
-            open
-              ? "border-cyan-300 bg-white ring-2 ring-cyan-100 dark:border-cyan-400 dark:bg-slate-800 dark:ring-cyan-500/20"
-              : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
+            disabled
+              ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500"
+              : open
+                ? "border-cyan-300 bg-white ring-2 ring-cyan-100 dark:border-cyan-400 dark:bg-slate-800 dark:ring-cyan-500/20"
+                : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
           }`}>
-          <span className="truncate text-slate-700 dark:text-slate-100">
+          <span
+            className={`truncate ${
+              disabled
+                ? "text-slate-400 dark:text-slate-500"
+                : "text-slate-700 dark:text-slate-100"
+            }`}>
             {value}
           </span>
 
           <ChevronDown
-            className={`ml-3 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
-              open ? "rotate-180" : ""
-            }`}
+            className={`ml-3 h-4 w-4 shrink-0 ${
+              disabled ? "text-slate-300 dark:text-slate-600" : "text-slate-400"
+            } transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           />
         </button>
 
-        {open && (
-          <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900">
+        {!disabled && open && (
+          <div
+            className={`absolute left-0 top-[calc(100%+8px)] z-[120] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}>
             <div className="py-2">
               {options.map((option) => {
                 const selected = option === value;
@@ -224,7 +301,7 @@ function RowsPerPageSelect({ value, onChange }) {
       </button>
 
       {open && (
-        <div className="absolute bottom-[calc(100%+8px)] left-0 z-30 min-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900">
+        <div className="absolute bottom-[calc(100%+8px)] left-0 z-[120] min-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900">
           <div className="py-2">
             {options.map((option) => {
               const selected = option === value;
@@ -269,11 +346,30 @@ function StatusBadge({ status }) {
   );
 }
 
-function ActionButtons({ enabled }) {
+function GameThumb({ row }) {
+  if (row.iconPreview) {
+    return (
+      <img
+        src={row.iconPreview}
+        alt={row.game}
+        className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+      <Gamepad2 className="h-4 w-4" />
+    </div>
+  );
+}
+
+function ActionButtons({ enabled, onEdit }) {
   return (
     <div className="flex items-center gap-2 whitespace-nowrap">
       <button
         type="button"
+        onClick={onEdit}
         className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
         <Pencil className="h-3 w-3" />
         <span>Edit</span>
@@ -339,112 +435,271 @@ function getPaginationItems(currentPage, totalPages) {
   ];
 }
 
-function GameManagementPage() {
-  const allRows = useMemo(() => buildGames(152), []);
+function EditGameView({
+  form,
+  setForm,
+  onSave,
+  onCancel,
+  onFileChange,
+  onRemoveImage,
+  fileInputRef,
+}) {
+  return (
+    <div className="relative overflow-visible rounded-[20px] border border-cyan-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-cyan-500/30 dark:bg-slate-950">
+      <div className="relative rounded-t-[20px] border-b border-cyan-300 bg-slate-50 px-5 py-5 dark:border-cyan-500/30 dark:bg-slate-900">
+        <img
+          src="/pattern3.png"
+          alt=""
+          className="pointer-events-none absolute right-0 top-0 h-full w-60 object-cover object-right opacity-15 dark:opacity-10"
+        />
 
-  const [keyword, setKeyword] = useState("");
-  const [coreProvider, setCoreProvider] = useState("All");
-  const [category, setCategory] = useState("All");
-  const [status, setStatus] = useState("All");
+        <div className="relative z-10">
+          <h1 className="text-[30px] font-bold tracking-[-0.03em] text-slate-800 dark:text-white">
+            Edit Game
+          </h1>
+        </div>
+      </div>
 
-  const [appliedFilters, setAppliedFilters] = useState({
-    keyword: "",
-    coreProvider: "All",
-    category: "All",
-    status: "All",
-  });
+      <div className="relative z-10 overflow-visible px-5 py-5">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Game Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.gameName}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    gameName: e.target.value,
+                    formError: "",
+                  }))
+                }
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-cyan-400"
+              />
+            </div>
 
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
+            <FilterSelect
+              label={
+                <>
+                  Provider <span className="text-red-500">*</span>
+                </>
+              }
+              value={form.provider}
+              onChange={(value) =>
+                setForm((prev) => ({
+                  ...prev,
+                  provider: value,
+                }))
+              }
+              options={["Pragmatic", "PG Soft", "Play'n GO", "NetEnt"]}
+              disabled
+              className="z-[20]"
+            />
 
-  const filteredRows = useMemo(() => {
-    return allRows.filter((row) => {
-      const keywordLower = appliedFilters.keyword.trim().toLowerCase();
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Description
+              </label>
+              <textarea
+                value={form.description}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                    formError: "",
+                  }))
+                }
+                rows={8}
+                className="min-h-[185px] w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-cyan-400"
+              />
+            </div>
+          </div>
 
-      const keywordMatch =
-        !keywordLower ||
-        row.game.toLowerCase().includes(keywordLower) ||
-        row.id.toLowerCase().includes(keywordLower);
+          <div className="space-y-4 overflow-visible">
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Icon
+              </label>
 
-      const providerMatch =
-        appliedFilters.coreProvider === "All" ||
-        row.provider === appliedFilters.coreProvider;
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".png,.jpg,.jpeg,.webp,.svg"
+                onChange={onFileChange}
+                className="hidden"
+              />
 
-      const categoryMatch =
-        appliedFilters.category === "All" ||
-        row.category === appliedFilters.category;
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => fileInputRef.current?.click()}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
+                className="relative flex min-h-[185px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-5 text-center transition hover:border-cyan-300 hover:bg-cyan-50/30 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-cyan-500/40 dark:hover:bg-slate-900">
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onRemoveImage();
+                  }}
+                  className={`absolute right-3 top-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm transition hover:bg-white ${
+                    form.iconPreview
+                      ? "visible"
+                      : "invisible pointer-events-none"
+                  }`}>
+                  <X className="h-4 w-4" />
+                </button>
 
-      const statusMatch =
-        appliedFilters.status === "All" ||
-        row.globalStatus === appliedFilters.status;
+                {form.iconPreview ? (
+                  <>
+                    <div className="mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                      <img
+                        src={form.iconPreview}
+                        alt={form.gameName || "Preview"}
+                        className="h-20 w-20 object-contain"
+                      />
+                    </div>
 
-      return keywordMatch && providerMatch && categoryMatch && statusMatch;
-    });
-  }, [allRows, appliedFilters]);
+                    <p className="max-w-full truncate text-sm font-medium text-indigo-500 dark:text-indigo-300">
+                      {form.iconFileName}
+                    </p>
 
-  const totalEntries = filteredRows.length;
-  const totalPages = Math.max(1, Math.ceil(totalEntries / rowsPerPage));
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-  const startIndex = (safeCurrentPage - 1) * rowsPerPage;
-  const endIndex = Math.min(startIndex + rowsPerPage, totalEntries);
-  const currentRows = filteredRows.slice(startIndex, endIndex);
-  const paginationItems = getPaginationItems(safeCurrentPage, totalPages);
+                    <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                      Drag and drop your PNG, JPG, WebP, SVG images here or
+                      browse
+                    </p>
 
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+                    <p className="mt-1 text-xs leading-5 text-slate-400 dark:text-slate-500">
+                      (Max. File Size: 5 MB)
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                      <ImagePlus className="h-6 w-6" />
+                    </div>
 
-  const handleSearch = () => {
-    setAppliedFilters({
-      keyword,
-      coreProvider,
-      category,
-      status,
-    });
-    setCurrentPage(1);
-  };
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                      Drag and drop or browse image
+                    </span>
 
-  const handleReset = () => {
-    setKeyword("");
-    setCoreProvider("All");
-    setCategory("All");
-    setStatus("All");
+                    <span className="mt-2 text-xs leading-5 text-slate-400 dark:text-slate-500">
+                      PNG, JPG, WebP, SVG
+                      <br />
+                      Max. file size: 5 MB
+                    </span>
+                  </>
+                )}
+              </div>
 
-    setAppliedFilters({
-      keyword: "",
-      coreProvider: "All",
-      category: "All",
-      status: "All",
-    });
+              {form.fileError && (
+                <p className="mt-2 text-xs font-medium text-red-500">
+                  {form.fileError}
+                </p>
+              )}
+            </div>
 
-    setRowsPerPage(10);
-    setCurrentPage(1);
-  };
+            <FilterSelect
+              label={
+                <>
+                  Category <span className="text-red-500">*</span>
+                </>
+              }
+              value={form.category}
+              onChange={(value) =>
+                setForm((prev) => ({
+                  ...prev,
+                  category: value,
+                  formError: "",
+                }))
+              }
+              options={["Slot", "Live Casino", "Table", "Arcade"]}
+              className="z-[110]"
+              menuClassName="z-[130]"
+            />
 
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      handleSearch();
-    }
-  };
+            <FilterSelect
+              label={
+                <>
+                  Status <span className="text-red-500">*</span>
+                </>
+              }
+              value={form.status}
+              onChange={(value) =>
+                setForm((prev) => ({
+                  ...prev,
+                  status: value,
+                  formError: "",
+                }))
+              }
+              options={["Active", "Inactive"]}
+              className="z-[100]"
+              menuClassName="z-[120]"
+            />
+          </div>
+        </div>
 
-  const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
+        {form.formError && (
+          <p className="mt-4 text-center text-sm font-medium text-red-500">
+            {form.formError}
+          </p>
+        )}
 
-  const handleNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={onSave}
+            className="inline-flex h-11 items-center gap-2 rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-5 text-sm font-semibold text-white shadow-sm">
+            <Save className="h-4 w-4" />
+            <span>Save</span>
+          </button>
 
-  const handleEllipsisClick = (direction) => {
-    if (direction === "left") {
-      setCurrentPage((prev) => Math.max(prev - 3, 1));
-    } else {
-      setCurrentPage((prev) => Math.min(prev + 3, totalPages));
-    }
-  };
+          <button
+            type="button"
+            onClick={onCancel}
+            className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+function ListView({
+  keyword,
+  setKeyword,
+  coreProvider,
+  setCoreProvider,
+  category,
+  setCategory,
+  status,
+  setStatus,
+  handleSearch,
+  handleReset,
+  handleKeyDown,
+  currentRows,
+  totalEntries,
+  startIndex,
+  endIndex,
+  rowsPerPage,
+  setRowsPerPage,
+  safeCurrentPage,
+  totalPages,
+  paginationItems,
+  handlePrevious,
+  handleNext,
+  handleEllipsisClick,
+  setCurrentPage,
+  onEdit,
+}) {
   return (
     <div className="overflow-hidden rounded-[20px] border border-cyan-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-cyan-500/30 dark:bg-slate-950">
       <div className="relative border-b border-cyan-300 bg-slate-50 px-5 py-5 dark:border-cyan-500/30 dark:bg-slate-900">
@@ -557,9 +812,7 @@ function GameManagementPage() {
 
                 <td className="whitespace-nowrap px-4 py-3">
                   <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                      <Gamepad2 className="h-3.5 w-3.5" />
-                    </div>
+                    <GameThumb row={row} />
                     <span className="truncate">{row.game}</span>
                   </div>
                 </td>
@@ -580,7 +833,10 @@ function GameManagementPage() {
                 </td>
 
                 <td className="whitespace-nowrap px-4 py-3">
-                  <ActionButtons enabled={row.clientEnable > 0} />
+                  <ActionButtons
+                    enabled={row.clientEnable > 0}
+                    onEdit={() => onEdit(row)}
+                  />
                 </td>
               </tr>
             ))}
@@ -675,6 +931,304 @@ function GameManagementPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function GameManagementPage() {
+  const [rows, setRows] = useState(() => loadRowsFromStorage());
+
+  const [keyword, setKeyword] = useState("");
+  const [coreProvider, setCoreProvider] = useState("All");
+  const [category, setCategory] = useState("All");
+  const [status, setStatus] = useState("All");
+
+  const [appliedFilters, setAppliedFilters] = useState({
+    keyword: "",
+    coreProvider: "All",
+    category: "All",
+    status: "All",
+  });
+
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [mode, setMode] = useState("list");
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    gameName: "",
+    provider: "Pragmatic",
+    description: "",
+    category: "Slot",
+    status: "Active",
+    iconFileName: "",
+    iconPreview: "",
+    fileError: "",
+    formError: "",
+  });
+
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+  }, [rows]);
+
+  const filteredRows = useMemo(() => {
+    return rows.filter((row) => {
+      const keywordLower = appliedFilters.keyword.trim().toLowerCase();
+
+      const keywordMatch =
+        !keywordLower ||
+        row.game.toLowerCase().includes(keywordLower) ||
+        row.id.toLowerCase().includes(keywordLower);
+
+      const providerMatch =
+        appliedFilters.coreProvider === "All" ||
+        row.provider === appliedFilters.coreProvider;
+
+      const categoryMatch =
+        appliedFilters.category === "All" ||
+        row.category === appliedFilters.category;
+
+      const statusMatch =
+        appliedFilters.status === "All" ||
+        row.globalStatus === appliedFilters.status;
+
+      return keywordMatch && providerMatch && categoryMatch && statusMatch;
+    });
+  }, [rows, appliedFilters]);
+
+  const totalEntries = filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalEntries / rowsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * rowsPerPage;
+  const endIndex = Math.min(startIndex + rowsPerPage, totalEntries);
+  const currentRows = filteredRows.slice(startIndex, endIndex);
+  const paginationItems = getPaginationItems(safeCurrentPage, totalPages);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const handleSearch = () => {
+    setAppliedFilters({
+      keyword,
+      coreProvider,
+      category,
+      status,
+    });
+    setCurrentPage(1);
+  };
+
+  const handleReset = () => {
+    setKeyword("");
+    setCoreProvider("All");
+    setCategory("All");
+    setStatus("All");
+    setAppliedFilters({
+      keyword: "",
+      coreProvider: "All",
+      category: "All",
+      status: "All",
+    });
+    setRowsPerPage(10);
+    setCurrentPage(1);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const handleEllipsisClick = (direction) => {
+    if (direction === "left") {
+      setCurrentPage((prev) => Math.max(prev - 3, 1));
+    } else {
+      setCurrentPage((prev) => Math.min(prev + 3, totalPages));
+    }
+  };
+
+  const handleEdit = (row) => {
+    setEditingId(row.id);
+    setEditForm({
+      gameName: row.game,
+      provider: row.provider,
+      description: row.description,
+      category: row.category,
+      status: row.globalStatus,
+      iconFileName: row.iconFileName || "",
+      iconPreview: row.iconPreview || "",
+      fileError: "",
+      formError: "",
+    });
+    setMode("edit");
+  };
+
+  const handleCancelEdit = () => {
+    setMode("list");
+    setEditingId(null);
+    setEditForm({
+      gameName: "",
+      provider: "Pragmatic",
+      description: "",
+      category: "Slot",
+      status: "Active",
+      iconFileName: "",
+      iconPreview: "",
+      fileError: "",
+      formError: "",
+    });
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingId) return;
+
+    const trimmedName = editForm.gameName.trim();
+
+    if (!trimmedName) {
+      setEditForm((prev) => ({
+        ...prev,
+        formError: "Game Name is required.",
+      }));
+      return;
+    }
+
+    setRows((prev) =>
+      prev.map((row) =>
+        row.id === editingId
+          ? {
+              ...row,
+              game: trimmedName,
+              provider: row.provider,
+              description: editForm.description,
+              category: editForm.category,
+              globalStatus: editForm.status,
+              iconFileName: editForm.iconFileName,
+              iconPreview: editForm.iconPreview,
+            }
+          : row,
+      ),
+    );
+
+    handleCancelEdit();
+  };
+
+  const handleRemoveImage = () => {
+    setEditForm((prev) => ({
+      ...prev,
+      iconFileName: "",
+      iconPreview: "",
+      fileError: "",
+    }));
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+      "image/svg+xml",
+    ];
+
+    if (!validTypes.includes(file.type)) {
+      setEditForm((prev) => ({
+        ...prev,
+        fileError: "Only PNG, JPG, JPEG, WebP, SVG files are allowed.",
+      }));
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setEditForm((prev) => ({
+        ...prev,
+        fileError: "Max file size is 5 MB.",
+      }));
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      const preview = await readFileAsDataURL(file);
+
+      setEditForm((prev) => ({
+        ...prev,
+        iconFileName: file.name,
+        iconPreview: String(preview),
+        fileError: "",
+      }));
+    } catch {
+      setEditForm((prev) => ({
+        ...prev,
+        fileError: "Failed to load image.",
+      }));
+    }
+  };
+
+  if (mode === "edit") {
+    return (
+      <EditGameView
+        form={editForm}
+        setForm={setEditForm}
+        onSave={handleSaveEdit}
+        onCancel={handleCancelEdit}
+        onFileChange={handleFileChange}
+        onRemoveImage={handleRemoveImage}
+        fileInputRef={fileInputRef}
+      />
+    );
+  }
+
+  return (
+    <ListView
+      keyword={keyword}
+      setKeyword={setKeyword}
+      coreProvider={coreProvider}
+      setCoreProvider={setCoreProvider}
+      category={category}
+      setCategory={setCategory}
+      status={status}
+      setStatus={setStatus}
+      handleSearch={handleSearch}
+      handleReset={handleReset}
+      handleKeyDown={handleKeyDown}
+      currentRows={currentRows}
+      totalEntries={totalEntries}
+      startIndex={startIndex}
+      endIndex={endIndex}
+      rowsPerPage={rowsPerPage}
+      setRowsPerPage={setRowsPerPage}
+      safeCurrentPage={safeCurrentPage}
+      totalPages={totalPages}
+      paginationItems={paginationItems}
+      handlePrevious={handlePrevious}
+      handleNext={handleNext}
+      handleEllipsisClick={handleEllipsisClick}
+      setCurrentPage={setCurrentPage}
+      onEdit={handleEdit}
+    />
   );
 }
 
