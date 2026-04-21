@@ -5,6 +5,10 @@ import { useTheme } from "./hooks/useTheme";
 import Dashboard from "./components/Dashboard/Dashboard";
 import GameManagementPage from "./components/GameManagement/GameManagementPage";
 import ClientManagementPage from "./components/ClientManagement/ClientManagementPage";
+import GameProviderManagementPage from "./components/GameProviderManagement/GameProviderManagementPage";
+import SysOpManagementPage from "./components/SysOpManagement/SysOpManagementPage";
+import BetManagementPage from "./components/BetManagement/BetManagementPage";
+import RevenueReportAnalyticsPage from "./components/RevenueReportAnalytics/RevenueReportAnalyticsPage";
 
 function App() {
   const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
@@ -23,50 +27,16 @@ function App() {
         return <ClientManagementPage />;
 
       case "provider":
-        return (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h1 className="text-2xl font-bold text-slate-800">
-              Game Provider Management
-            </h1>
-            <p className="mt-2 text-slate-500">
-              Đây là trang Game Provider Management.
-            </p>
-          </div>
-        );
+        return <GameProviderManagementPage />;
 
       case "sysOp":
-        return (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h1 className="text-2xl font-bold text-slate-800">
-              SysOp & Access Management
-            </h1>
-            <p className="mt-2 text-slate-500">
-              Đây là trang SysOp & Access Management.
-            </p>
-          </div>
-        );
+        return <SysOpManagementPage />;
 
       case "bet":
-        return (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h1 className="text-2xl font-bold text-slate-800">
-              Bet Management
-            </h1>
-            <p className="mt-2 text-slate-500">Đây là trang Bet Management.</p>
-          </div>
-        );
+        return <BetManagementPage />;
 
       case "report":
-        return (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h1 className="text-2xl font-bold text-slate-800">
-              Revenue Reporting
-            </h1>
-            <p className="mt-2 text-slate-500">
-              Đây là trang Revenue Reporting.
-            </p>
-          </div>
-        );
+        return <RevenueReportAnalyticsPage />;
 
       default:
         return <Dashboard />;
