@@ -1,26 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  CheckCircle2,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ChevronDown,
   CircleOff,
   Gamepad2,
   Pencil,
   Search,
-  ChevronDown,
-  ArrowLeft,
-  ArrowRight,
-  Check,
 } from "lucide-react";
 
-const rows = [
+const baseGames = [
   {
     id: "G-001",
     game: "Game 1",
     description: "Short description of the game.",
     provider: "Pragmatic",
     category: "Slot",
-    status: "Inactive",
-    enabled: 99,
-    action: "Enable",
+    globalStatus: "Inactive",
+    clientEnable: 99,
   },
   {
     id: "G-002",
@@ -28,9 +26,8 @@ const rows = [
     description: "Short description of the game.",
     provider: "PG Soft",
     category: "Live Casino",
-    status: "Active",
-    enabled: 0,
-    action: "Disable",
+    globalStatus: "Active",
+    clientEnable: 0,
   },
   {
     id: "G-003",
@@ -38,9 +35,8 @@ const rows = [
     description: "Short description of the game.",
     provider: "Play'n GO",
     category: "Table",
-    status: "Active",
-    enabled: 0,
-    action: "Disable",
+    globalStatus: "Active",
+    clientEnable: 0,
   },
   {
     id: "G-004",
@@ -48,9 +44,8 @@ const rows = [
     description: "Short description of the game.",
     provider: "Pragmatic",
     category: "Slot",
-    status: "Active",
-    enabled: 110,
-    action: "Disable",
+    globalStatus: "Active",
+    clientEnable: 110,
   },
   {
     id: "G-005",
@@ -58,9 +53,8 @@ const rows = [
     description: "Short description of the game.",
     provider: "NetEnt",
     category: "Live Casino",
-    status: "Inactive",
-    enabled: 0,
-    action: "Enable",
+    globalStatus: "Inactive",
+    clientEnable: 0,
   },
   {
     id: "G-006",
@@ -68,9 +62,8 @@ const rows = [
     description: "Short description of the game.",
     provider: "Pragmatic",
     category: "Table",
-    status: "Active",
-    enabled: 0,
-    action: "Disable",
+    globalStatus: "Active",
+    clientEnable: 0,
   },
   {
     id: "G-007",
@@ -78,9 +71,8 @@ const rows = [
     description: "Short description of the game.",
     provider: "Play'n GO",
     category: "Arcade",
-    status: "Active",
-    enabled: 0,
-    action: "Disable",
+    globalStatus: "Active",
+    clientEnable: 0,
   },
   {
     id: "G-008",
@@ -88,9 +80,8 @@ const rows = [
     description: "Short description of the game.",
     provider: "PG Soft",
     category: "Slot",
-    status: "Active",
-    enabled: 0,
-    action: "Disable",
+    globalStatus: "Active",
+    clientEnable: 0,
   },
   {
     id: "G-009",
@@ -98,29 +89,34 @@ const rows = [
     description: "Short description of the game.",
     provider: "Pragmatic",
     category: "Arcade",
-    status: "Active",
-    enabled: 0,
-    action: "Disable",
+    globalStatus: "Active",
+    clientEnable: 0,
+  },
+  {
+    id: "G-010",
+    game: "Game 10",
+    description: "Short description of the game.",
+    provider: "Pragmatic",
+    category: "Slot",
+    globalStatus: "Inactive",
+    clientEnable: 99,
   },
 ];
 
-function FilterInput({ label, placeholder }) {
-  return (
-    <div className="min-w-0">
-      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-        {label}
-      </label>
-      <input
-        type="text"
-        placeholder={placeholder}
-        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400"
-      />
-    </div>
-  );
+function buildGames(total = 152) {
+  return Array.from({ length: total }, (_, index) => {
+    const item = baseGames[index % baseGames.length];
+    const num = index + 1;
+
+    return {
+      ...item,
+      id: `G-${String(num).padStart(3, "0")}`,
+      game: `Game ${num}`,
+    };
+  });
 }
 
-function FilterSelect({ label, options = ["All"], defaultValue = "All" }) {
-  const [selected, setSelected] = useState(defaultValue);
+function FilterSelect({ label, value, options, onChange, className = "" }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -132,13 +128,11 @@ function FilterSelect({ label, options = ["All"], defaultValue = "All" }) {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
-    <div className="min-w-0" ref={wrapperRef}>
+    <div className={`min-w-0 ${className}`} ref={wrapperRef}>
       <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
         {label}
       </label>
@@ -147,17 +141,17 @@ function FilterSelect({ label, options = ["All"], defaultValue = "All" }) {
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className={`flex h-11 w-full items-center justify-between rounded-xl border px-4 text-sm transition ${
+          className={`flex h-11 w-full items-center justify-between rounded-xl border px-4 text-sm transition-all ${
             open
-              ? "border-cyan-300 bg-white ring-2 ring-cyan-100 dark:border-cyan-400 dark:bg-slate-900 dark:ring-cyan-500/20"
+              ? "border-cyan-300 bg-white ring-2 ring-cyan-100 dark:border-cyan-400 dark:bg-slate-800 dark:ring-cyan-500/20"
               : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
           }`}>
           <span className="truncate text-slate-700 dark:text-slate-100">
-            {selected}
+            {value}
           </span>
 
           <ChevronDown
-            className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
+            className={`ml-3 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
               open ? "rotate-180" : ""
             }`}
           />
@@ -167,23 +161,23 @@ function FilterSelect({ label, options = ["All"], defaultValue = "All" }) {
           <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900">
             <div className="py-2">
               {options.map((option) => {
-                const isSelected = option === selected;
+                const selected = option === value;
 
                 return (
                   <button
                     key={option}
                     type="button"
                     onClick={() => {
-                      setSelected(option);
+                      onChange(option);
                       setOpen(false);
                     }}
                     className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition ${
-                      isSelected
+                      selected
                         ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
                         : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
                     }`}>
                     <span>{option}</span>
-                    {isSelected && <Check className="h-4 w-4" />}
+                    {selected && <Check className="h-4 w-4 shrink-0" />}
                   </button>
                 );
               })}
@@ -208,9 +202,7 @@ function RowsPerPageSelect({ value, onChange }) {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -218,11 +210,11 @@ function RowsPerPageSelect({ value, onChange }) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className={`flex h-9 min-w-[64px] items-center justify-between rounded-xl border pl-3 pr-3 text-sm transition ${
+        className={`flex h-9 min-w-[66px] items-center justify-between rounded-xl border bg-white px-3 text-sm text-slate-700 transition ${
           open
-            ? "border-cyan-300 bg-white ring-2 ring-cyan-100 dark:border-cyan-400 dark:bg-slate-900 dark:ring-cyan-500/20"
-            : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
-        } text-slate-700 dark:text-slate-100`}>
+            ? "border-cyan-300 ring-2 ring-cyan-100 dark:border-cyan-400 dark:ring-cyan-500/20"
+            : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
+        } dark:bg-slate-900 dark:text-slate-100`}>
         <span>{value}</span>
         <ChevronDown
           className={`ml-2 h-4 w-4 text-slate-400 transition-transform ${
@@ -248,7 +240,7 @@ function RowsPerPageSelect({ value, onChange }) {
                   className={`block w-full px-4 py-2 text-left text-sm transition ${
                     selected
                       ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
-                      : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                      : "text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800"
                   }`}>
                   {option}
                 </button>
@@ -262,25 +254,24 @@ function RowsPerPageSelect({ value, onChange }) {
 }
 
 function StatusBadge({ status }) {
-  const isActive = status === "Active";
+  if (status === "Active") {
+    return (
+      <span className="inline-flex min-w-[68px] items-center justify-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
+        Active
+      </span>
+    );
+  }
 
   return (
-    <span
-      className={`inline-flex min-w-[60px] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${
-        isActive
-          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300"
-          : "bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-300"
-      }`}>
-      {status}
+    <span className="inline-flex min-w-[68px] items-center justify-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500 dark:bg-red-500/10 dark:text-red-300">
+      Inactive
     </span>
   );
 }
 
-function ActionButtons({ action }) {
-  const enable = action === "Enable";
-
+function ActionButtons({ enabled }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 whitespace-nowrap">
       <button
         type="button"
         className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
@@ -288,20 +279,21 @@ function ActionButtons({ action }) {
         <span>Edit</span>
       </button>
 
-      <button
-        type="button"
-        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
-          enable
-            ? "bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-300"
-            : "bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-300"
-        }`}>
-        {enable ? (
-          <CheckCircle2 className="h-3 w-3" />
-        ) : (
+      {enabled ? (
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500 dark:bg-red-500/10 dark:text-red-300">
           <CircleOff className="h-3 w-3" />
-        )}
-        <span>{action}</span>
-      </button>
+          <span>Disable</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
+          <Check className="h-3 w-3" />
+          <span>Enable</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -348,34 +340,93 @@ function getPaginationItems(currentPage, totalPages) {
 }
 
 function GameManagementPage() {
-  const allRows = useMemo(() => {
-    return Array.from({ length: 152 }, (_, index) => {
-      const baseRow = rows[index % rows.length];
-      const number = index + 1;
+  const allRows = useMemo(() => buildGames(152), []);
 
-      return {
-        ...baseRow,
-        id: `G-${String(number).padStart(3, "0")}`,
-        game: `Game ${number}`,
-      };
-    });
-  }, []);
+  const [keyword, setKeyword] = useState("");
+  const [coreProvider, setCoreProvider] = useState("All");
+  const [category, setCategory] = useState("All");
+  const [status, setStatus] = useState("All");
+
+  const [appliedFilters, setAppliedFilters] = useState({
+    keyword: "",
+    coreProvider: "All",
+    category: "All",
+    status: "All",
+  });
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalEntries = allRows.length;
-  const totalPages = Math.ceil(totalEntries / rowsPerPage);
+  const filteredRows = useMemo(() => {
+    return allRows.filter((row) => {
+      const keywordLower = appliedFilters.keyword.trim().toLowerCase();
 
-  const startIndex = (currentPage - 1) * rowsPerPage;
+      const keywordMatch =
+        !keywordLower ||
+        row.game.toLowerCase().includes(keywordLower) ||
+        row.id.toLowerCase().includes(keywordLower);
+
+      const providerMatch =
+        appliedFilters.coreProvider === "All" ||
+        row.provider === appliedFilters.coreProvider;
+
+      const categoryMatch =
+        appliedFilters.category === "All" ||
+        row.category === appliedFilters.category;
+
+      const statusMatch =
+        appliedFilters.status === "All" ||
+        row.globalStatus === appliedFilters.status;
+
+      return keywordMatch && providerMatch && categoryMatch && statusMatch;
+    });
+  }, [allRows, appliedFilters]);
+
+  const totalEntries = filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalEntries / rowsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * rowsPerPage;
   const endIndex = Math.min(startIndex + rowsPerPage, totalEntries);
-  const currentRows = allRows.slice(startIndex, endIndex);
+  const currentRows = filteredRows.slice(startIndex, endIndex);
+  const paginationItems = getPaginationItems(safeCurrentPage, totalPages);
 
-  const paginationItems = getPaginationItems(currentPage, totalPages);
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
-  const handleChangeRowsPerPage = (value) => {
-    setRowsPerPage(value);
+  const handleSearch = () => {
+    setAppliedFilters({
+      keyword,
+      coreProvider,
+      category,
+      status,
+    });
     setCurrentPage(1);
+  };
+
+  const handleReset = () => {
+    setKeyword("");
+    setCoreProvider("All");
+    setCategory("All");
+    setStatus("All");
+
+    setAppliedFilters({
+      keyword: "",
+      coreProvider: "All",
+      category: "All",
+      status: "All",
+    });
+
+    setRowsPerPage(10);
+    setCurrentPage(1);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleSearch();
+    }
   };
 
   const handlePrevious = () => {
@@ -400,50 +451,64 @@ function GameManagementPage() {
         <img
           src="/pattern3.png"
           alt=""
-          className="pointer-events-none absolute right-0 top-0 h-full w-60 object-cover opacity-35"
+          className="pointer-events-none absolute right-0 top-0 h-full w-60 object-cover object-right opacity-15 dark:opacity-10"
         />
 
         <div className="relative z-10">
-          <h1 className="text-[30px] font-bold tracking-[-0.03em] text-slate-800 dark:text-white">
+          <h1 className="mb-5 text-[30px] font-bold tracking-[-0.03em] text-slate-800 dark:text-white">
             View Game List
           </h1>
 
-          <div className="mt-5 flex flex-col gap-4 xl:flex-row xl:items-end">
-            <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <FilterInput
-                label="Game Name"
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[1.15fr_1fr_1fr_1fr_auto_auto]">
+            <div className="min-w-0">
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Game Name
+              </label>
+              <input
+                type="text"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder="Search by name/code"
-              />
-
-              <FilterSelect
-                label="Core Provider"
-                options={["All", "Pragmatic", "PG Soft", "Play'n GO", "NetEnt"]}
-                defaultValue="All"
-              />
-
-              <FilterSelect
-                label="Category"
-                options={["All", "Slot", "Live Casino", "Table", "Arcade"]}
-                defaultValue="All"
-              />
-
-              <FilterSelect
-                label="Status"
-                options={["All", "Active", "Inactive"]}
-                defaultValue="All"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400"
               />
             </div>
 
-            <div className="flex shrink-0 items-end gap-2">
+            <FilterSelect
+              label="Core Provider"
+              value={coreProvider}
+              onChange={setCoreProvider}
+              options={["All", "Pragmatic", "PG Soft", "Play'n GO", "NetEnt"]}
+            />
+
+            <FilterSelect
+              label="Category"
+              value={category}
+              onChange={setCategory}
+              options={["All", "Slot", "Live Casino", "Table", "Arcade"]}
+            />
+
+            <FilterSelect
+              label="Status"
+              value={status}
+              onChange={setStatus}
+              options={["All", "Active", "Inactive"]}
+            />
+
+            <div className="flex items-end">
               <button
                 type="button"
+                onClick={handleSearch}
                 className="inline-flex h-11 items-center gap-2 rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-5 text-sm font-semibold text-white shadow-sm">
                 <Search className="h-4 w-4" />
                 <span>Search</span>
               </button>
+            </div>
 
+            <div className="flex items-end">
               <button
                 type="button"
+                onClick={handleReset}
                 className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                 Reset
               </button>
@@ -453,17 +518,33 @@ function GameManagementPage() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
+        <table className="w-full table-fixed text-sm">
           <thead>
             <tr className="bg-slate-50 text-left text-slate-600 dark:bg-slate-900 dark:text-slate-300">
-              <th className="px-4 py-4 font-semibold">Game ID</th>
-              <th className="px-4 py-4 font-semibold">Game</th>
-              <th className="px-4 py-4 font-semibold">Description</th>
-              <th className="px-4 py-4 font-semibold">Provider</th>
-              <th className="px-4 py-4 font-semibold">Category</th>
-              <th className="px-4 py-4 font-semibold">Global Status</th>
-              <th className="px-4 py-4 font-semibold">Client Enable</th>
-              <th className="px-4 py-4 font-semibold">Action (Global)</th>
+              <th className="w-[90px] whitespace-nowrap px-4 py-4 font-semibold">
+                Game ID
+              </th>
+              <th className="w-[170px] whitespace-nowrap px-4 py-4 font-semibold">
+                Game
+              </th>
+              <th className="w-[280px] whitespace-nowrap px-4 py-4 font-semibold">
+                Description
+              </th>
+              <th className="w-[120px] whitespace-nowrap px-4 py-4 font-semibold">
+                Provider
+              </th>
+              <th className="w-[120px] whitespace-nowrap px-4 py-4 font-semibold">
+                Category
+              </th>
+              <th className="w-[150px] whitespace-nowrap px-4 py-4 font-semibold">
+                Global Status
+              </th>
+              <th className="w-[120px] whitespace-nowrap px-4 py-4 font-semibold">
+                Client Enable
+              </th>
+              <th className="w-[220px] whitespace-nowrap px-4 py-4 font-semibold">
+                Action (Global)
+              </th>
             </tr>
           </thead>
 
@@ -472,29 +553,47 @@ function GameManagementPage() {
               <tr
                 key={row.id}
                 className="border-t border-slate-100 text-slate-700 dark:border-slate-800 dark:text-slate-300">
-                <td className="px-4 py-3">{row.id}</td>
+                <td className="whitespace-nowrap px-4 py-3">{row.id}</td>
 
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-300 text-white dark:bg-slate-700">
+                <td className="whitespace-nowrap px-4 py-3">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
                       <Gamepad2 className="h-3.5 w-3.5" />
                     </div>
-                    <span>{row.game}</span>
+                    <span className="truncate">{row.game}</span>
                   </div>
                 </td>
 
-                <td className="px-4 py-3">{row.description}</td>
-                <td className="px-4 py-3">{row.provider}</td>
-                <td className="px-4 py-3">{row.category}</td>
                 <td className="px-4 py-3">
-                  <StatusBadge status={row.status} />
+                  <p className="truncate">{row.description}</p>
                 </td>
-                <td className="px-4 py-3">{row.enabled}</td>
-                <td className="px-4 py-3">
-                  <ActionButtons action={row.action} />
+
+                <td className="whitespace-nowrap px-4 py-3">{row.provider}</td>
+                <td className="whitespace-nowrap px-4 py-3">{row.category}</td>
+
+                <td className="whitespace-nowrap px-4 py-3">
+                  <StatusBadge status={row.globalStatus} />
+                </td>
+
+                <td className="whitespace-nowrap px-4 py-3">
+                  {row.clientEnable}
+                </td>
+
+                <td className="whitespace-nowrap px-4 py-3">
+                  <ActionButtons enabled={row.clientEnable > 0} />
                 </td>
               </tr>
             ))}
+
+            {currentRows.length === 0 && (
+              <tr>
+                <td
+                  colSpan={8}
+                  className="px-4 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+                  No matching games found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -505,11 +604,15 @@ function GameManagementPage() {
 
           <RowsPerPageSelect
             value={rowsPerPage}
-            onChange={handleChangeRowsPerPage}
+            onChange={(value) => {
+              setRowsPerPage(value);
+              setCurrentPage(1);
+            }}
           />
 
           <span>
-            {startIndex + 1} to {endIndex} of {totalEntries} entries
+            {totalEntries === 0 ? 0 : startIndex + 1} to {endIndex} of{" "}
+            {totalEntries} entries
           </span>
         </div>
 
@@ -517,9 +620,9 @@ function GameManagementPage() {
           <button
             type="button"
             onClick={handlePrevious}
-            disabled={currentPage === 1}
+            disabled={safeCurrentPage === 1}
             className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 transition ${
-              currentPage === 1
+              safeCurrentPage === 1
                 ? "cursor-not-allowed text-slate-300 dark:text-slate-700"
                 : "text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
             }`}>
@@ -547,7 +650,7 @@ function GameManagementPage() {
                   type="button"
                   onClick={() => setCurrentPage(item.value)}
                   className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 transition ${
-                    currentPage === item.value
+                    safeCurrentPage === item.value
                       ? "bg-indigo-600 text-white"
                       : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                   }`}>
@@ -560,9 +663,9 @@ function GameManagementPage() {
           <button
             type="button"
             onClick={handleNext}
-            disabled={currentPage === totalPages}
+            disabled={safeCurrentPage === totalPages}
             className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 transition ${
-              currentPage === totalPages
+              safeCurrentPage === totalPages
                 ? "cursor-not-allowed text-slate-300 dark:text-slate-700"
                 : "text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
             }`}>

@@ -36,10 +36,12 @@ function DashboardSelect({
             ? "border-cyan-300 bg-white ring-2 ring-cyan-100 dark:border-cyan-400 dark:bg-slate-800 dark:ring-cyan-500/20"
             : "border-slate-200 bg-slate-100 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600"
         } ${buttonClassName}`}>
-        <span className="truncate text-slate-800 dark:text-white">{value}</span>
+        <span className="block min-w-0 flex-1 truncate whitespace-nowrap text-left text-slate-800 dark:text-white">
+          {value}
+        </span>
 
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
+          className={`ml-3 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
         />
@@ -60,13 +62,15 @@ function DashboardSelect({
                     onChange(option);
                     setOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition ${
+                  className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition ${
                     isSelected
                       ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
                       : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
                   }`}>
-                  <span>{option}</span>
-                  {isSelected && <Check className="h-4 w-4" />}
+                  <span className="block min-w-0 flex-1 whitespace-nowrap">
+                    {option}
+                  </span>
+                  {isSelected && <Check className="h-4 w-4 shrink-0" />}
                 </button>
               );
             })}

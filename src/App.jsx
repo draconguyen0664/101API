@@ -9,8 +9,9 @@ import GameProviderManagementPage from "./components/GameProviderManagement/Game
 import SysOpManagementPage from "./components/SysOpManagement/SysOpManagementPage";
 import BetManagementPage from "./components/BetManagement/BetManagementPage";
 import RevenueReportAnalyticsPage from "./components/RevenueReportAnalytics/RevenueReportAnalyticsPage";
+import { LanguageProvider } from "./contexts/LanguageContext";
 
-function App() {
+function AppContent() {
   const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState("dashboard");
   const { theme, toggleTheme } = useTheme();
@@ -44,7 +45,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-all duration-500">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 transition-all duration-500 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="flex h-screen overflow-hidden">
         <Sidebar
           collapsed={sideBarCollapsed}
@@ -63,11 +64,19 @@ function App() {
           />
 
           <main className="flex-1 overflow-y-auto bg-transparent">
-            <div className="p-6 space-y-6">{renderPage()}</div>
+            <div className="space-y-6 p-6">{renderPage()}</div>
           </main>
         </div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 

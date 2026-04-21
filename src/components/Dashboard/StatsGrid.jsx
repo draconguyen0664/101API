@@ -70,7 +70,7 @@ function CardDecoration({ image }) {
       <img
         src={image}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover opacity-100 dark:opacity-80"
+        className="absolute top-4 right-2 h-[140px] w-[215px] object-cover object-right opacity-45 blur-[1.5px] dark:opacity-30 dark:blur-[1.5px]"
       />
 
       <div className="absolute inset-0 bg-white/10 dark:bg-slate-950/30" />
