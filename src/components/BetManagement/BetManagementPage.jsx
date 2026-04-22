@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import {
-  ArrowDownRight,
   ArrowLeft,
   ArrowRight,
-  ArrowUpRight,
   CalendarDays,
   Check,
   ChevronDown,
@@ -12,163 +10,246 @@ import {
   Download,
   Eye,
   Search,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 
-const baseRows = [
+const STATUS_OPTIONS = ["All", "Success", "Canceled", "Processing"];
+const CURRENCY_OPTIONS = ["All", "USD", "EUR", "VND", "SGD", "THB"];
+const GAME_TYPE_OPTIONS = ["All", "Live Casino", "Lottery", "Slot", "Table"];
+const TYPE_OPTIONS = ["All", "Promo", "Normal"];
+
+const baseTransactions = [
   {
-    id: "TRS-009",
+    transId: "TRS-009",
+    betTime: "03/10/2025 09:15",
     clientName: "Client A",
     providerName: "WALA SUB 1",
     gameName: "WALA88",
+    playerName: "player.alpha",
+    currency: "USD",
     gameType: "Live Casino",
+    type: "Promo",
+    status: "Success",
     betAmount: 1000,
-    winLoss: 0,
+    winLossAmount: 0,
     profitLoss: "GGR",
     netIncome: 0,
     clientRate: "-",
-    providerCostValue: 0,
-    providerCostCode1: "PVD-001",
-    providerCostCode2: "PVD-001",
-    status: "Success",
-    type: "Promo",
   },
   {
-    id: "TRS-008",
+    transId: "TRS-008",
+    betTime: "03/10/2025 09:15",
     clientName: "Client B",
     providerName: "MARBLEF1 TEST",
     gameName: "MARBLEF1",
+    playerName: "player.beta",
+    currency: "USD",
     gameType: "Lottery",
+    type: "Normal",
+    status: "Canceled",
     betAmount: 1000,
-    winLoss: 800,
+    winLossAmount: 800,
     profitLoss: "GGR",
     netIncome: -108,
     clientRate: "20%",
-    providerCostValue: -132,
-    providerCostCode1: "PVD-002",
-    providerCostCode2: "PVD-002",
-    status: "Canceled",
-    type: "Normal",
   },
   {
-    id: "TRS-007",
+    transId: "TRS-007",
+    betTime: "03/10/2025 09:15",
     clientName: "Client C",
     providerName: "HEO PIANO",
     gameName: "HEO",
+    playerName: "player.charlie",
+    currency: "USD",
     gameType: "Slot",
-    betAmount: 1000,
-    winLoss: 800,
-    profitLoss: "GGR",
-    netIncome: 0,
-    clientRate: "-",
-    providerCostValue: 0,
-    providerCostCode1: "PVD-003",
-    providerCostCode2: "PVD-003",
-    status: "Success",
     type: "Normal",
-  },
-  {
-    id: "TRS-006",
-    clientName: "Client D",
-    providerName: "PAX HD2",
-    gameName: "PAX",
-    gameType: "Live Casino",
-    betAmount: 1000,
-    winLoss: -200,
-    profitLoss: 840,
-    netIncome: 378,
-    clientRate: "20%",
-    providerCostValue: 462,
-    providerCostCode1: "PVD-004",
-    providerCostCode2: "PVD-004",
     status: "Success",
-    type: "Normal",
-  },
-  {
-    id: "TRS-005",
-    clientName: "Client E",
-    providerName: "AGVC MOONLIGHT",
-    gameName: "AGVC",
-    gameType: "Live Casino",
     betAmount: 1000,
-    winLoss: 200,
-    profitLoss: 130,
-    netIncome: 58,
-    clientRate: "20%",
-    providerCostValue: 71,
-    providerCostCode1: "PVD-005",
-    providerCostCode2: "PVD-005",
-    status: "Processing",
-    type: "Promo",
-  },
-  {
-    id: "TRS-004",
-    clientName: "Client F",
-    providerName: "PAX H1",
-    gameName: "CL023",
-    gameType: "Lottery",
-    betAmount: 800,
-    winLoss: 0,
-    profitLoss: 1860,
-    netIncome: 837,
-    clientRate: "20%",
-    providerCostValue: 1023,
-    providerCostCode1: "PVD-006",
-    providerCostCode2: "PVD-006",
-    status: "Canceled",
-    type: "Normal",
-  },
-  {
-    id: "TRS-003",
-    clientName: "Client G",
-    providerName: "WALA88",
-    gameName: "WALA88",
-    gameType: "Slot",
-    betAmount: 800,
-    winLoss: 0,
-    profitLoss: -360,
-    netIncome: -162,
-    clientRate: "20%",
-    providerCostValue: -198,
-    providerCostCode1: "PVD-007",
-    providerCostCode2: "PVD-007",
-    status: "Success",
-    type: "Promo",
-  },
-  {
-    id: "TRS-002",
-    clientName: "Client H",
-    providerName: "MARBLEF1 GUITAR",
-    gameName: "MARBLEF1",
-    gameType: "Live Casino",
-    betAmount: 1000,
-    winLoss: -200,
+    winLossAmount: 800,
     profitLoss: 0,
     netIncome: 0,
     clientRate: "-",
-    providerCostValue: 0,
-    providerCostCode1: "PVD-008",
-    providerCostCode2: "PVD-008",
-    status: "Canceled",
-    type: "Normal",
   },
   {
-    id: "TRS-001",
+    transId: "TRS-006",
+    betTime: "03/10/2025 09:15",
+    clientName: "Client D",
+    providerName: "PAX HD2",
+    gameName: "PAX",
+    playerName: "player.delta",
+    currency: "USD",
+    gameType: "Live Casino",
+    type: "Normal",
+    status: "Success",
+    betAmount: 1000,
+    winLossAmount: -200,
+    profitLoss: 840,
+    netIncome: 378,
+    clientRate: "20%",
+  },
+  {
+    transId: "TRS-005",
+    betTime: "03/10/2025 09:15",
+    clientName: "Client E",
+    providerName: "AGVC MOONLIGHT",
+    gameName: "AGVC",
+    playerName: "player.echo",
+    currency: "USD",
+    gameType: "Live Casino",
+    type: "Promo",
+    status: "Processing",
+    betAmount: 1000,
+    winLossAmount: 200,
+    profitLoss: 130,
+    netIncome: 58,
+    clientRate: "20%",
+  },
+  {
+    transId: "TRS-004",
+    betTime: "03/10/2025 09:15",
+    clientName: "Client F",
+    providerName: "PAX H1",
+    gameName: "CL023",
+    playerName: "player.foxtrot",
+    currency: "EUR",
+    gameType: "Lottery",
+    type: "Normal",
+    status: "Canceled",
+    betAmount: 800,
+    winLossAmount: 0,
+    profitLoss: 1860,
+    netIncome: 837,
+    clientRate: "20%",
+  },
+  {
+    transId: "TRS-003",
+    betTime: "03/10/2025 09:15",
+    clientName: "Client G",
+    providerName: "WALA88",
+    gameName: "WALA88",
+    playerName: "player.golf",
+    currency: "VND",
+    gameType: "Slot",
+    type: "Promo",
+    status: "Success",
+    betAmount: 800,
+    winLossAmount: 0,
+    profitLoss: -360,
+    netIncome: -162,
+    clientRate: "20%",
+  },
+  {
+    transId: "TRS-002",
+    betTime: "03/10/2025 09:15",
+    clientName: "Client H",
+    providerName: "MARBLEF1 GUITAR",
+    gameName: "MARBLEF1",
+    playerName: "player.hotel",
+    currency: "USD",
+    gameType: "Live Casino",
+    type: "Normal",
+    status: "Canceled",
+    betAmount: 1000,
+    winLossAmount: -200,
+    profitLoss: 0,
+    netIncome: 0,
+    clientRate: "-",
+  },
+  {
+    transId: "TRS-001",
+    betTime: "03/10/2025 09:15",
     clientName: "Client I",
     providerName: "HEO GAMER",
     gameName: "HEO",
+    playerName: "player.india",
+    currency: "USD",
     gameType: "Live Casino",
+    type: "Normal",
+    status: "Canceled",
     betAmount: 1000,
-    winLoss: -200,
+    winLossAmount: -200,
     profitLoss: 640,
     netIncome: 288,
     clientRate: "20%",
-    providerCostValue: 352,
-    providerCostCode1: "PVD-009",
-    providerCostCode2: "PVD-009",
-    status: "Canceled",
-    type: "Normal",
   },
 ];
+
+const TABLE_COLUMNS = [
+  { key: "transId", label: "Trans ID", minWidth: "min-w-[120px]" },
+  { key: "betTime", label: "Bet Time", minWidth: "min-w-[150px]" },
+  { key: "clientName", label: "Client Name", minWidth: "min-w-[140px]" },
+  { key: "providerName", label: "Provider Name", minWidth: "min-w-[170px]" },
+  { key: "gameName", label: "Game Name", minWidth: "min-w-[120px]" },
+  { key: "playerName", label: "Player Name", minWidth: "min-w-[170px]" },
+  { key: "currency", label: "Currency", minWidth: "min-w-[90px]" },
+  { key: "gameType", label: "Game Type", minWidth: "min-w-[120px]" },
+  { key: "betAmount", label: "Bet Amount", minWidth: "min-w-[110px]" },
+  { key: "winLossAmount", label: "Win/Loss Amount", minWidth: "min-w-[130px]" },
+  { key: "profitLoss", label: "Profit/Loss", minWidth: "min-w-[120px]" },
+  { key: "netIncome", label: "NET INCOME", minWidth: "min-w-[120px]" },
+  { key: "clientRate", label: "Client Rate (%)", minWidth: "min-w-[120px]" },
+  {
+    key: "status",
+    label: "Status",
+    minWidth: "min-w-[120px]",
+    stickyRight: "right-[220px]",
+    stickyZ: "z-20",
+  },
+  {
+    key: "type",
+    label: "Type",
+    minWidth: "min-w-[100px]",
+    stickyRight: "right-[120px]",
+    stickyZ: "z-20",
+  },
+  {
+    key: "action",
+    label: "Action",
+    minWidth: "min-w-[120px]",
+    stickyRight: "right-0",
+    stickyZ: "z-30",
+    stickyShadow: true,
+  },
+];
+
+function buildTransactions(total = 152) {
+  return Array.from({ length: total }, (_, index) => {
+    const item = baseTransactions[index % baseTransactions.length];
+    const number = total - index;
+    const day = String((index % 28) + 1).padStart(2, "0");
+    const month = index % 3 === 0 ? "10" : index % 3 === 1 ? "11" : "12";
+    const hour = String(9 + (index % 8)).padStart(2, "0");
+    const minute = String(10 + (index % 40)).padStart(2, "0");
+
+    return {
+      ...item,
+      transId: `TRS-${String(number).padStart(3, "0")}`,
+      betTime: `${day}/${month}/2025 ${hour}:${minute}`,
+      playerName: `${item.playerName}.${number}`,
+    };
+  });
+}
+
+function parseTableDate(dateTimeString) {
+  if (!dateTimeString) return null;
+
+  const [datePart] = dateTimeString.split(" ");
+  const [day, month, year] = datePart.split("/").map(Number);
+
+  if (!day || !month || !year) return null;
+
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+}
+
+function formatDateLabel(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${day}/${month}/${year}`;
+}
 
 function startOfDay(date) {
   const d = new Date(date);
@@ -182,622 +263,59 @@ function endOfDay(date) {
   return d;
 }
 
-function addDays(date, amount) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + amount);
-  return d;
-}
-
-function addMonths(date, amount) {
-  const d = new Date(date);
-  d.setMonth(d.getMonth() + amount);
-  return d;
-}
-
-function startOfMonth(date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-function endOfMonth(date) {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
-}
-
 function startOfWeek(date) {
   const d = new Date(date);
   const day = d.getDay();
   d.setDate(d.getDate() - day);
-  d.setHours(0, 0, 0, 0);
-  return d;
+  return startOfDay(d);
 }
 
 function endOfWeek(date) {
   const d = startOfWeek(date);
   d.setDate(d.getDate() + 6);
-  d.setHours(23, 59, 59, 999);
-  return d;
+  return endOfDay(d);
+}
+
+function startOfMonth(date) {
+  return startOfDay(new Date(date.getFullYear(), date.getMonth(), 1));
+}
+
+function endOfMonth(date) {
+  return endOfDay(new Date(date.getFullYear(), date.getMonth() + 1, 0));
 }
 
 function isSameDay(a, b) {
   if (!a || !b) return false;
+
   return (
-    a.getFullYear() === b.getFullYear() &&
+    a.getDate() === b.getDate() &&
     a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
+    a.getFullYear() === b.getFullYear()
   );
 }
 
-function isDateBetween(date, start, end) {
+function isDateInRange(date, start, end) {
   if (!start || !end) return false;
-  const current = startOfDay(date).getTime();
-  return (
-    current > startOfDay(start).getTime() && current < startOfDay(end).getTime()
-  );
+  return date >= startOfDay(start) && date <= endOfDay(end);
 }
 
-function formatMonthYear(date) {
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
-}
+function getMonthMatrix(monthDate) {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const firstWeekday = firstDay.getDay();
+  const startDate = new Date(year, month, 1 - firstWeekday);
 
-function formatShortDate(date) {
-  return date.toLocaleDateString("en-US", {
-    month: "2-digit",
-    day: "2-digit",
-    year: "numeric",
-  });
-}
+  return Array.from({ length: 6 }, (_, weekIndex) =>
+    Array.from({ length: 7 }, (_, dayIndex) => {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + weekIndex * 7 + dayIndex);
 
-function formatRangeValue(start, end) {
-  if (!start || !end) return "";
-  return `${formatShortDate(start)} - ${formatShortDate(end)}`;
-}
-
-function getPresetRange(type) {
-  const today = new Date();
-
-  switch (type) {
-    case "Today":
       return {
-        start: startOfDay(today),
-        end: endOfDay(today),
+        date,
+        isCurrentMonth: date.getMonth() === month,
       };
-
-    case "Yesterday": {
-      const yesterday = addDays(today, -1);
-      return {
-        start: startOfDay(yesterday),
-        end: endOfDay(yesterday),
-      };
-    }
-
-    case "This Week":
-      return {
-        start: startOfWeek(today),
-        end: endOfWeek(today),
-      };
-
-    case "Last Week": {
-      const lastWeekDate = addDays(today, -7);
-      return {
-        start: startOfWeek(lastWeekDate),
-        end: endOfWeek(lastWeekDate),
-      };
-    }
-
-    case "This Month":
-      return {
-        start: startOfMonth(today),
-        end: endOfMonth(today),
-      };
-
-    case "Last Month": {
-      const lastMonth = addMonths(today, -1);
-      return {
-        start: startOfMonth(lastMonth),
-        end: endOfMonth(lastMonth),
-      };
-    }
-
-    default:
-      return {
-        start: null,
-        end: null,
-      };
-  }
-}
-
-function getMonthDays(monthDate) {
-  const firstDay = startOfMonth(monthDate);
-  const lastDay = endOfMonth(monthDate);
-
-  const startCalendar = new Date(firstDay);
-  startCalendar.setDate(firstDay.getDate() - firstDay.getDay());
-
-  const endCalendar = new Date(lastDay);
-  endCalendar.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
-
-  const days = [];
-  const cursor = new Date(startCalendar);
-
-  while (cursor <= endCalendar) {
-    days.push(new Date(cursor));
-    cursor.setDate(cursor.getDate() + 1);
-  }
-
-  return days;
-}
-
-function DateRangePickerInput({ label, value, onChange }) {
-  const wrapperRef = useRef(null);
-  const [open, setOpen] = useState(false);
-  const [leftMonth, setLeftMonth] = useState(startOfMonth(new Date()));
-  const [draftStart, setDraftStart] = useState(value.start);
-  const [draftEnd, setDraftEnd] = useState(value.end);
-
-  useEffect(() => {
-    setDraftStart(value.start);
-    setDraftEnd(value.end);
-
-    if (value.start) {
-      setLeftMonth(startOfMonth(value.start));
-    }
-  }, [value.start, value.end]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!wrapperRef.current?.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const rightMonth = addMonths(leftMonth, 1);
-  const leftDays = getMonthDays(leftMonth);
-  const rightDays = getMonthDays(rightMonth);
-
-  const displayValue =
-    draftStart && draftEnd ? formatRangeValue(draftStart, draftEnd) : "";
-
-  const applyPreset = (preset) => {
-    const range = getPresetRange(preset);
-    setDraftStart(range.start);
-    setDraftEnd(range.end);
-    onChange(range);
-  };
-
-  const handleDateClick = (date) => {
-    const clickedDate = startOfDay(date);
-
-    if (!draftStart || (draftStart && draftEnd)) {
-      setDraftStart(clickedDate);
-      setDraftEnd(null);
-      return;
-    }
-
-    if (clickedDate.getTime() < draftStart.getTime()) {
-      setDraftStart(clickedDate);
-      return;
-    }
-
-    const newEnd = endOfDay(clickedDate);
-    setDraftEnd(newEnd);
-    onChange({
-      start: draftStart,
-      end: newEnd,
-    });
-  };
-
-  const renderCalendar = (monthDate, days) => {
-    return (
-      <div className="w-full">
-        <div className="mb-3 grid grid-cols-7 place-items-center gap-y-2 text-[12px] text-slate-400 dark:text-slate-500">
-          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-            <div key={day} className="flex h-8 w-8 items-center justify-center">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7 place-items-center gap-y-2">
-          {days.map((day) => {
-            const isOutsideMonth = day.getMonth() !== monthDate.getMonth();
-            const isStart = draftStart && isSameDay(day, draftStart);
-            const isEnd = draftEnd && isSameDay(day, draftEnd);
-            const isBetween = isDateBetween(day, draftStart, draftEnd);
-            const isSelected = isStart || isEnd;
-
-            return (
-              <button
-                key={day.toISOString()}
-                type="button"
-                onClick={() => handleDateClick(day)}
-                className={`flex h-10 w-10 items-center justify-center rounded-[10px] text-[14px] transition ${
-                  isSelected
-                    ? "bg-linear-to-r from-sky-400 to-emerald-400 text-white shadow-sm"
-                    : isBetween
-                      ? "bg-emerald-50 text-slate-800 dark:bg-emerald-500/10 dark:text-slate-100"
-                      : isOutsideMonth
-                        ? "text-slate-300 dark:text-slate-600"
-                        : "text-slate-800 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800"
-                }`}>
-                {day.getDate()}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="min-w-0" ref={wrapperRef}>
-      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-        {label}
-      </label>
-
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setOpen((prev) => !prev)}
-          className={`flex h-11 w-full items-center justify-between rounded-xl border bg-white px-4 text-left transition ${
-            open
-              ? "border-cyan-300 ring-2 ring-cyan-100 dark:border-cyan-400 dark:ring-cyan-500/20"
-              : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
-          } dark:bg-slate-900`}>
-          <span
-            className={`truncate text-sm ${
-              displayValue
-                ? "text-slate-700 dark:text-slate-100"
-                : "text-slate-300 dark:text-slate-500"
-            }`}>
-            {displayValue || "Select date range"}
-          </span>
-
-          <CalendarDays className="h-5 w-5 shrink-0 text-slate-600 dark:text-slate-300" />
-        </button>
-
-        {open && (
-          <div className="absolute left-0 top-[calc(100%+10px)] z-50 w-[760px] overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
-            <div className="flex">
-              <div className="w-[150px] border-r border-slate-200 px-4 py-4 dark:border-slate-700">
-                <div className="space-y-3">
-                  {[
-                    "Today",
-                    "Yesterday",
-                    "This Week",
-                    "Last Week",
-                    "This Month",
-                    "Last Month",
-                  ].map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => applyPreset(preset)}
-                      className="block text-left text-[15px] text-slate-800 transition hover:text-cyan-600 dark:text-slate-100 dark:hover:text-cyan-400">
-                      {preset}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex-1">
-                <div className="flex items-center border-b border-slate-200 dark:border-slate-700">
-                  <div className="flex w-1/2 items-center justify-between border-r border-slate-200 px-4 py-3 dark:border-slate-700">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setLeftMonth((prev) => addMonths(prev, -1))
-                      }
-                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800">
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-
-                    <div className="text-[16px] font-bold text-slate-800 dark:text-white">
-                      {formatMonthYear(leftMonth)}
-                    </div>
-
-                    <div className="h-9 w-9" />
-                  </div>
-
-                  <div className="flex w-1/2 items-center justify-between px-4 py-3">
-                    <div className="h-9 w-9" />
-
-                    <div className="text-[16px] font-bold text-slate-800 dark:text-white">
-                      {formatMonthYear(rightMonth)}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setLeftMonth((prev) => addMonths(prev, 1))}
-                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800">
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex gap-0 px-5 py-4">
-                  <div className="w-1/2 pr-4">
-                    {renderCalendar(leftMonth, leftDays)}
-                  </div>
-                  <div className="w-1/2 pl-4">
-                    {renderCalendar(rightMonth, rightDays)}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-5 py-3 dark:border-slate-700">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDraftStart(null);
-                      setDraftEnd(null);
-                      onChange({ start: null, end: null });
-                    }}
-                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
-                    Clear
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setOpen(false)}
-                    className="rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-4 py-2 text-sm font-semibold text-white">
-                    Apply
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function FilterInput({ label, placeholder, value, onChange }) {
-  return (
-    <div className="min-w-0">
-      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-        {label}
-      </label>
-      <input
-        type="text"
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400"
-      />
-    </div>
-  );
-}
-
-function FilterSelect({ label, options = ["All"], value, onChange }) {
-  const [open, setOpen] = useState(false);
-  const wrapperRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!wrapperRef.current?.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  return (
-    <div className="min-w-0" ref={wrapperRef}>
-      <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-        {label}
-      </label>
-
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setOpen((prev) => !prev)}
-          className={`flex h-11 w-full items-center justify-between rounded-xl border bg-white px-4 text-sm transition ${
-            open
-              ? "border-cyan-300 ring-2 ring-cyan-100 dark:border-cyan-400 dark:ring-cyan-500/20"
-              : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
-          } dark:bg-slate-900`}>
-          <span className="truncate text-slate-700 dark:text-slate-100">
-            {value}
-          </span>
-
-          <ChevronDown
-            className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
-              open ? "rotate-180" : ""
-            }`}
-          />
-        </button>
-
-        {open && (
-          <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900">
-            <div className="py-2">
-              {options.map((option) => {
-                const isSelected = option === value;
-
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => {
-                      onChange(option);
-                      setOpen(false);
-                    }}
-                    className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition ${
-                      isSelected
-                        ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
-                        : "text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800"
-                    }`}>
-                    <span>{option}</span>
-                    {isSelected && <Check className="h-4 w-4" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function RowsPerPageSelect({ value, onChange }) {
-  const [open, setOpen] = useState(false);
-  const wrapperRef = useRef(null);
-  const options = [10, 25, 50];
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!wrapperRef.current?.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  return (
-    <div className="relative inline-block" ref={wrapperRef}>
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        className={`flex h-9 min-w-[64px] items-center justify-between rounded-xl border bg-white pl-3 pr-3 text-sm text-slate-700 transition ${
-          open
-            ? "border-cyan-300 ring-2 ring-cyan-100 dark:border-cyan-400 dark:ring-cyan-500/20"
-            : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
-        } dark:bg-slate-900 dark:text-slate-100`}>
-        <span>{value}</span>
-        <ChevronDown
-          className={`ml-2 h-4 w-4 text-slate-400 transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {open && (
-        <div className="absolute bottom-[calc(100%+8px)] left-0 z-30 min-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] dark:border-slate-700 dark:bg-slate-900">
-          <div className="py-2">
-            {options.map((option) => {
-              const selected = option === value;
-
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    onChange(option);
-                    setOpen(false);
-                  }}
-                  className={`block w-full px-4 py-2 text-left text-sm transition ${
-                    selected
-                      ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
-                      : "text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800"
-                  }`}>
-                  {option}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function formatAmount(value) {
-  if (typeof value !== "number") return value;
-  return value.toLocaleString();
-}
-
-function StatusBadge({ status }) {
-  if (status === "Success") {
-    return (
-      <span className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
-        Success
-      </span>
-    );
-  }
-
-  if (status === "Processing") {
-    return (
-      <span className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-600 dark:bg-sky-500/10 dark:text-sky-300">
-        Processing
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex min-w-[88px] items-center justify-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-500 dark:bg-red-500/10 dark:text-red-300">
-      Canceled
-    </span>
-  );
-}
-
-function TypeBadge({ type }) {
-  if (type === "Promo") {
-    return (
-      <span className="inline-flex min-w-[72px] items-center justify-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300">
-        Promo
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex min-w-[72px] items-center justify-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-      Normal
-    </span>
-  );
-}
-
-function ValueCell({ value }) {
-  if (typeof value !== "number" || value === 0) {
-    return (
-      <span className="whitespace-nowrap text-slate-700 dark:text-slate-300">
-        {formatAmount(value)}
-      </span>
-    );
-  }
-
-  const isPositive = value > 0;
-
-  return (
-    <span
-      className={`inline-flex whitespace-nowrap items-center gap-1 font-medium ${
-        isPositive
-          ? "text-emerald-600 dark:text-emerald-300"
-          : "text-red-500 dark:text-red-300"
-      }`}>
-      <span>{formatAmount(value)}</span>
-      {isPositive ? (
-        <ArrowUpRight className="h-3.5 w-3.5" />
-      ) : (
-        <ArrowDownRight className="h-3.5 w-3.5" />
-      )}
-    </span>
-  );
-}
-
-function ActionButtons() {
-  return (
-    <button
-      type="button"
-      className="inline-flex min-w-[78px] items-center justify-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
-      <Eye className="h-3 w-3" />
-      <span>View</span>
-    </button>
+    }),
   );
 }
 
@@ -842,22 +360,640 @@ function getPaginationItems(currentPage, totalPages) {
   ];
 }
 
-function BetManagementPage() {
-  const allRows = useMemo(() => {
-    return Array.from({ length: 152 }, (_, index) => {
-      const source = baseRows[index % baseRows.length];
-      const number = 152 - index;
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
 
-      return {
-        ...source,
-        id: `TRS-${String(number).padStart(3, "0")}`,
-      };
-    });
+function formatNumber(value) {
+  if (typeof value !== "number") return value;
+  return value.toLocaleString();
+}
+
+function formatSignedDisplay(value) {
+  if (typeof value !== "number") return value;
+  return value.toLocaleString();
+}
+
+function getStickyRightClass(column, isHeader = false) {
+  if (!column.stickyRight) return "";
+
+  const baseBg = isHeader
+    ? "bg-slate-50 dark:bg-slate-900"
+    : "bg-white dark:bg-slate-950";
+
+  const shadow = column.stickyShadow
+    ? "shadow-[-10px_0_16px_-12px_rgba(15,23,42,0.35)]"
+    : "";
+
+  return `sticky ${column.stickyRight} ${column.stickyZ || "z-20"} ${baseBg} ${shadow}`;
+}
+
+function FieldLabel({ children }) {
+  return (
+    <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+      {children}
+    </label>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+  className = "",
+  menuClassName = "",
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!wrapperRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  const [betTime, setBetTime] = useState({
-    start: null,
-    end: null,
+  return (
+    <div className={`relative min-w-0 ${className}`} ref={wrapperRef}>
+      {label && <FieldLabel>{label}</FieldLabel>}
+
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className={`flex h-11 w-full items-center justify-between rounded-xl border px-4 text-sm transition-all ${
+          open
+            ? "border-cyan-300 bg-white ring-2 ring-cyan-100 dark:border-cyan-400 dark:bg-slate-800 dark:ring-cyan-500/20"
+            : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
+        }`}>
+        <span className="truncate text-slate-700 dark:text-slate-100">
+          {value}
+        </span>
+
+        <ChevronDown
+          className={`ml-3 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open && (
+        <div
+          className={`absolute left-0 top-[calc(100%+8px)] z-[140] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}>
+          <div className="py-2">
+            {options.map((option) => {
+              const selected = option === value;
+
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => {
+                    onChange(option);
+                    setOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition ${
+                    selected
+                      ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
+                      : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                  }`}>
+                  <span>{option}</span>
+                  {selected && <Check className="h-4 w-4 shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RowsPerPageSelect({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef(null);
+  const options = [10, 25, 50];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!wrapperRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="relative inline-block" ref={wrapperRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className={`flex h-9 min-w-[66px] items-center justify-between rounded-xl border bg-white px-3 text-sm text-slate-700 transition ${
+          open
+            ? "border-cyan-300 ring-2 ring-cyan-100 dark:border-cyan-400 dark:ring-cyan-500/20"
+            : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
+        } dark:bg-slate-900 dark:text-slate-100`}>
+        <span>{value}</span>
+        <ChevronDown
+          className={`ml-2 h-4 w-4 text-slate-400 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute bottom-[calc(100%+8px)] left-0 z-[140] min-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900">
+          <div className="py-2">
+            {options.map((option) => {
+              const selected = option === value;
+
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => {
+                    onChange(option);
+                    setOpen(false);
+                  }}
+                  className={`block w-full px-4 py-2 text-left text-sm transition ${
+                    selected
+                      ? "bg-cyan-50 font-semibold text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300"
+                      : "text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800"
+                  }`}>
+                  {option}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CalendarMonthGrid({
+  monthDate,
+  startDate,
+  endDate,
+  hoverDate,
+  onDayClick,
+  onDayHover,
+}) {
+  const matrix = getMonthMatrix(monthDate);
+  const previewEnd = startDate && !endDate && hoverDate ? hoverDate : endDate;
+
+  return (
+    <div className="w-full px-6 py-5">
+      <div className="mb-3 grid grid-cols-7 gap-y-2 text-center text-sm text-slate-400 dark:text-slate-500">
+        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+          <div key={day}>{day}</div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-y-2 text-center">
+        {matrix.flat().map(({ date, isCurrentMonth }) => {
+          const selectedStart = startDate && isSameDay(date, startDate);
+          const selectedEnd = endDate && isSameDay(date, endDate);
+
+          const rangeStart =
+            startDate && previewEnd
+              ? startDate < previewEnd
+                ? startDate
+                : previewEnd
+              : null;
+
+          const rangeEnd =
+            startDate && previewEnd
+              ? startDate < previewEnd
+                ? previewEnd
+                : startDate
+              : null;
+
+          const inRange =
+            rangeStart && rangeEnd && isDateInRange(date, rangeStart, rangeEnd);
+
+          return (
+            <button
+              key={date.toISOString()}
+              type="button"
+              onClick={() => onDayClick(date)}
+              onMouseEnter={() => onDayHover(date)}
+              className={`mx-auto flex h-10 w-10 items-center justify-center rounded-xl text-[15px] transition ${
+                !isCurrentMonth
+                  ? "text-slate-300 dark:text-slate-600"
+                  : "text-slate-800 dark:text-slate-100"
+              } ${
+                inRange && !selectedStart && !selectedEnd
+                  ? "bg-emerald-100/70 dark:bg-emerald-500/15"
+                  : ""
+              } ${
+                selectedStart || selectedEnd
+                  ? "bg-linear-to-r from-cyan-400 to-emerald-400 text-white"
+                  : "hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}>
+              {date.getDate()}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DateRangePicker({ label, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [tempStart, setTempStart] = useState(value.startDate || null);
+  const [tempEnd, setTempEnd] = useState(value.endDate || null);
+  const [hoverDate, setHoverDate] = useState(null);
+  const [leftMonth, setLeftMonth] = useState(() => {
+    const base = value.startDate || new Date();
+    return new Date(base.getFullYear(), base.getMonth(), 1);
+  });
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    setTempStart(value.startDate || null);
+    setTempEnd(value.endDate || null);
+
+    const base = value.startDate || new Date();
+    setLeftMonth(new Date(base.getFullYear(), base.getMonth(), 1));
+  }, [value.startDate, value.endDate]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!wrapperRef.current?.contains(event.target)) {
+        setOpen(false);
+        setHoverDate(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const displayValue = useMemo(() => {
+    if (value.startDate && value.endDate) {
+      return `${formatDateLabel(value.startDate)} - ${formatDateLabel(
+        value.endDate,
+      )}`;
+    }
+
+    if (value.startDate) {
+      return `${formatDateLabel(value.startDate)} - ...`;
+    }
+
+    return "";
+  }, [value]);
+
+  const applyPreset = (preset) => {
+    const now = new Date();
+    let start = null;
+    let end = null;
+
+    if (preset === "Today") {
+      start = startOfDay(now);
+      end = endOfDay(now);
+    } else if (preset === "Yesterday") {
+      const y = new Date(now);
+      y.setDate(y.getDate() - 1);
+      start = startOfDay(y);
+      end = endOfDay(y);
+    } else if (preset === "This Week") {
+      start = startOfWeek(now);
+      end = endOfWeek(now);
+    } else if (preset === "Last Week") {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 7);
+      start = startOfWeek(d);
+      end = endOfWeek(d);
+    } else if (preset === "This Month") {
+      start = startOfMonth(now);
+      end = endOfMonth(now);
+    } else if (preset === "Last Month") {
+      const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      start = startOfMonth(d);
+      end = endOfMonth(d);
+    }
+
+    setTempStart(start);
+    setTempEnd(end);
+    setHoverDate(null);
+
+    if (start) {
+      setLeftMonth(new Date(start.getFullYear(), start.getMonth(), 1));
+    }
+  };
+
+  const handleDayClick = (date) => {
+    if (!tempStart || (tempStart && tempEnd)) {
+      setTempStart(startOfDay(date));
+      setTempEnd(null);
+      setHoverDate(null);
+      return;
+    }
+
+    if (date < tempStart) {
+      setTempEnd(endOfDay(tempStart));
+      setTempStart(startOfDay(date));
+      return;
+    }
+
+    setTempEnd(endOfDay(date));
+  };
+
+  const handleApply = () => {
+    onChange({
+      startDate: tempStart,
+      endDate: tempEnd,
+    });
+    setOpen(false);
+    setHoverDate(null);
+  };
+
+  const handleClear = () => {
+    setTempStart(null);
+    setTempEnd(null);
+    setHoverDate(null);
+
+    onChange({
+      startDate: null,
+      endDate: null,
+    });
+
+    setOpen(false);
+  };
+
+  const rightMonth = new Date(
+    leftMonth.getFullYear(),
+    leftMonth.getMonth() + 1,
+    1,
+  );
+
+  return (
+    <div className="relative min-w-0" ref={wrapperRef}>
+      <FieldLabel>{label}</FieldLabel>
+
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className={`flex h-11 w-full items-center justify-between rounded-xl border px-4 text-sm transition-all ${
+          open
+            ? "border-cyan-300 bg-white ring-2 ring-cyan-100 dark:border-cyan-400 dark:bg-slate-800 dark:ring-cyan-500/20"
+            : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
+        }`}>
+        <span
+          className={`truncate ${
+            displayValue
+              ? "text-slate-700 dark:text-slate-100"
+              : "text-slate-300 dark:text-slate-500"
+          }`}>
+          {displayValue || "Select date range"}
+        </span>
+
+        <CalendarDays className="ml-3 h-4 w-4 shrink-0 text-slate-400" />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-[calc(100%+8px)] z-[160] flex w-[930px] overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.20)] dark:border-slate-700 dark:bg-slate-900">
+          <div className="w-[170px] border-r border-slate-200 px-4 py-5 dark:border-slate-700">
+            {[
+              "Today",
+              "Yesterday",
+              "This Week",
+              "Last Week",
+              "This Month",
+              "Last Month",
+            ].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => applyPreset(item)}
+                className="block w-full rounded-lg px-3 py-3 text-left text-[15px] text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800">
+                {item}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-1 flex-col">
+            <div className="grid grid-cols-[72px_1fr_1fr_72px] items-center border-b border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-center py-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLeftMonth(
+                      new Date(
+                        leftMonth.getFullYear(),
+                        leftMonth.getMonth() - 1,
+                        1,
+                      ),
+                    )
+                  }
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="border-r border-slate-200 py-4 text-center text-[18px] font-bold text-slate-800 dark:border-slate-700 dark:text-white">
+                {leftMonth.toLocaleString("en-US", {
+                  month: "short",
+                  year: "numeric",
+                })}
+              </div>
+
+              <div className="py-4 text-center text-[18px] font-bold text-slate-800 dark:text-white">
+                {rightMonth.toLocaleString("en-US", {
+                  month: "short",
+                  year: "numeric",
+                })}
+              </div>
+
+              <div className="flex items-center justify-center py-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLeftMonth(
+                      new Date(
+                        leftMonth.getFullYear(),
+                        leftMonth.getMonth() + 1,
+                        1,
+                      ),
+                    )
+                  }
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2">
+              <div className="border-r border-slate-200 dark:border-slate-700">
+                <CalendarMonthGrid
+                  monthDate={leftMonth}
+                  startDate={tempStart}
+                  endDate={tempEnd}
+                  hoverDate={hoverDate}
+                  onDayClick={handleDayClick}
+                  onDayHover={setHoverDate}
+                />
+              </div>
+
+              <CalendarMonthGrid
+                monthDate={rightMonth}
+                startDate={tempStart}
+                endDate={tempEnd}
+                hoverDate={hoverDate}
+                onDayClick={handleDayClick}
+                onDayHover={setHoverDate}
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-5 py-4 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={handleClear}
+                className="h-10 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                Clear
+              </button>
+
+              <button
+                type="button"
+                onClick={handleApply}
+                className="h-10 rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-5 text-sm font-semibold text-white">
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const styles =
+    status === "Success"
+      ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300"
+      : status === "Processing"
+        ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300"
+        : "bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-300";
+
+  return (
+    <span
+      className={`inline-flex min-w-[88px] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
+      {status}
+    </span>
+  );
+}
+
+function TypeBadge({ type }) {
+  const styles =
+    type === "Promo"
+      ? "bg-indigo-50 text-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300"
+      : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300";
+
+  return (
+    <span
+      className={`inline-flex min-w-[72px] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${styles}`}>
+      {type}
+    </span>
+  );
+}
+
+function NumberDeltaCell({ value }) {
+  if (typeof value !== "number") {
+    return <span className="text-slate-700 dark:text-slate-200">{value}</span>;
+  }
+
+  if (value > 0) {
+    return (
+      <span className="inline-flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-300">
+        <span>{formatSignedDisplay(value)}</span>
+        <TrendingUp className="h-3.5 w-3.5" />
+      </span>
+    );
+  }
+
+  if (value < 0) {
+    return (
+      <span className="inline-flex items-center gap-1 font-medium text-red-500 dark:text-red-300">
+        <span>{formatSignedDisplay(value)}</span>
+        <TrendingDown className="h-3.5 w-3.5" />
+      </span>
+    );
+  }
+
+  return <span className="text-slate-700 dark:text-slate-200">0</span>;
+}
+
+function ActionButtons({ onView }) {
+  return (
+    <div className="flex items-center gap-2 whitespace-nowrap">
+      <button
+        type="button"
+        onClick={onView}
+        className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
+        <Eye className="h-3 w-3" />
+        <span>View</span>
+      </button>
+    </div>
+  );
+}
+
+function renderCellContent(columnKey, row, onView) {
+  switch (columnKey) {
+    case "betAmount":
+      return formatNumber(row.betAmount);
+
+    case "winLossAmount":
+      return <NumberDeltaCell value={row.winLossAmount} />;
+
+    case "profitLoss":
+      return typeof row.profitLoss === "number" ? (
+        <NumberDeltaCell value={row.profitLoss} />
+      ) : (
+        <span>{row.profitLoss}</span>
+      );
+
+    case "netIncome":
+      return <NumberDeltaCell value={row.netIncome} />;
+
+    case "status":
+      return <StatusBadge status={row.status} />;
+
+    case "type":
+      return <TypeBadge type={row.type} />;
+
+    case "action":
+      return <ActionButtons onView={() => onView(row)} />;
+
+    default:
+      return row[columnKey];
+  }
+}
+
+function BetManagementPage() {
+  const [rows] = useState(() => buildTransactions(152));
+
+  const [betTimeFilter, setBetTimeFilter] = useState({
+    startDate: null,
+    endDate: null,
   });
   const [transId, setTransId] = useState("");
   const [clientName, setClientName] = useState("");
@@ -869,21 +1005,246 @@ function BetManagementPage() {
   const [gameType, setGameType] = useState("All");
   const [type, setType] = useState("All");
 
+  const [appliedFilters, setAppliedFilters] = useState({
+    betTimeFilter: {
+      startDate: null,
+      endDate: null,
+    },
+    transId: "",
+    clientName: "",
+    providerName: "",
+    gameName: "",
+    playerName: "",
+    status: "All",
+    currency: "All",
+    gameType: "All",
+    type: "All",
+  });
+
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalEntries = allRows.length;
-  const totalPages = Math.ceil(totalEntries / rowsPerPage);
+  const filteredRows = useMemo(() => {
+    return rows.filter((row) => {
+      const transMatch =
+        !appliedFilters.transId.trim() ||
+        row.transId
+          .toLowerCase()
+          .includes(appliedFilters.transId.trim().toLowerCase());
 
-  const startIndex = (currentPage - 1) * rowsPerPage;
+      const clientMatch =
+        !appliedFilters.clientName.trim() ||
+        row.clientName
+          .toLowerCase()
+          .includes(appliedFilters.clientName.trim().toLowerCase());
+
+      const providerMatch =
+        !appliedFilters.providerName.trim() ||
+        row.providerName
+          .toLowerCase()
+          .includes(appliedFilters.providerName.trim().toLowerCase());
+
+      const gameMatch =
+        !appliedFilters.gameName.trim() ||
+        row.gameName
+          .toLowerCase()
+          .includes(appliedFilters.gameName.trim().toLowerCase());
+
+      const playerMatch =
+        !appliedFilters.playerName.trim() ||
+        row.playerName
+          .toLowerCase()
+          .includes(appliedFilters.playerName.trim().toLowerCase());
+
+      const statusMatch =
+        appliedFilters.status === "All" || row.status === appliedFilters.status;
+
+      const currencyMatch =
+        appliedFilters.currency === "All" ||
+        row.currency === appliedFilters.currency;
+
+      const gameTypeMatch =
+        appliedFilters.gameType === "All" ||
+        row.gameType === appliedFilters.gameType;
+
+      const typeMatch =
+        appliedFilters.type === "All" || row.type === appliedFilters.type;
+
+      const rowDate = parseTableDate(row.betTime);
+      const startDate = appliedFilters.betTimeFilter.startDate;
+      const endDate = appliedFilters.betTimeFilter.endDate;
+
+      let betTimeMatch = true;
+
+      if (startDate && rowDate) {
+        betTimeMatch = rowDate >= startOfDay(startDate);
+      }
+
+      if (betTimeMatch && endDate && rowDate) {
+        betTimeMatch = rowDate <= endOfDay(endDate);
+      }
+
+      return (
+        transMatch &&
+        clientMatch &&
+        providerMatch &&
+        gameMatch &&
+        playerMatch &&
+        statusMatch &&
+        currencyMatch &&
+        gameTypeMatch &&
+        typeMatch &&
+        betTimeMatch
+      );
+    });
+  }, [rows, appliedFilters]);
+
+  const totalEntries = filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalEntries / rowsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * rowsPerPage;
   const endIndex = Math.min(startIndex + rowsPerPage, totalEntries);
-  const currentRows = allRows.slice(startIndex, endIndex);
+  const currentRows = filteredRows.slice(startIndex, endIndex);
+  const paginationItems = getPaginationItems(safeCurrentPage, totalPages);
 
-  const paginationItems = getPaginationItems(currentPage, totalPages);
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
-  const handleChangeRowsPerPage = (value) => {
-    setRowsPerPage(value);
+  const handleSearch = () => {
+    setAppliedFilters({
+      betTimeFilter: {
+        startDate: betTimeFilter.startDate,
+        endDate: betTimeFilter.endDate,
+      },
+      transId,
+      clientName,
+      providerName,
+      gameName,
+      playerName,
+      status,
+      currency,
+      gameType,
+      type,
+    });
+
     setCurrentPage(1);
+  };
+
+  const handleReset = () => {
+    const resetDate = {
+      startDate: null,
+      endDate: null,
+    };
+
+    setBetTimeFilter(resetDate);
+    setTransId("");
+    setClientName("");
+    setProviderName("");
+    setGameName("");
+    setPlayerName("");
+    setStatus("All");
+    setCurrency("All");
+    setGameType("All");
+    setType("All");
+
+    setAppliedFilters({
+      betTimeFilter: resetDate,
+      transId: "",
+      clientName: "",
+      providerName: "",
+      gameName: "",
+      playerName: "",
+      status: "All",
+      currency: "All",
+      gameType: "All",
+      type: "All",
+    });
+
+    setRowsPerPage(10);
+    setCurrentPage(1);
+  };
+
+  const handleExportExcel = () => {
+    const exportRows = filteredRows;
+
+    const headers = TABLE_COLUMNS.map((column) => column.label);
+
+    const tableRows = exportRows
+      .map(
+        (row) => `
+          <tr>
+            <td>${escapeHtml(row.transId)}</td>
+            <td>${escapeHtml(row.betTime)}</td>
+            <td>${escapeHtml(row.clientName)}</td>
+            <td>${escapeHtml(row.providerName)}</td>
+            <td>${escapeHtml(row.gameName)}</td>
+            <td>${escapeHtml(row.playerName)}</td>
+            <td>${escapeHtml(row.currency)}</td>
+            <td>${escapeHtml(row.gameType)}</td>
+            <td>${escapeHtml(formatNumber(row.betAmount))}</td>
+            <td>${escapeHtml(formatSignedDisplay(row.winLossAmount))}</td>
+            <td>${escapeHtml(
+              typeof row.profitLoss === "number"
+                ? formatSignedDisplay(row.profitLoss)
+                : row.profitLoss,
+            )}</td>
+            <td>${escapeHtml(formatSignedDisplay(row.netIncome))}</td>
+            <td>${escapeHtml(row.clientRate)}</td>
+            <td>${escapeHtml(row.status)}</td>
+            <td>${escapeHtml(row.type)}</td>
+            <td>View</td>
+          </tr>
+        `,
+      )
+      .join("");
+
+    const html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office"
+            xmlns:x="urn:schemas-microsoft-com:office:excel"
+            xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="UTF-8" />
+          <style>
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #cbd5e1; padding: 8px; font-family: Arial, sans-serif; font-size: 12px; }
+            th { background: #e2e8f0; font-weight: bold; text-align: left; }
+          </style>
+        </head>
+        <body>
+          <table>
+            <thead>
+              <tr>
+                ${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    const blob = new Blob([html], {
+      type: "application/vnd.ms-excel;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const timestamp = new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replaceAll(":", "-");
+
+    link.href = url;
+    link.download = `bet-management-${timestamp}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handlePrevious = () => {
@@ -902,25 +1263,15 @@ function BetManagementPage() {
     }
   };
 
-  const handleReset = () => {
-    setBetTime({ start: null, end: null });
-    setTransId("");
-    setClientName("");
-    setProviderName("");
-    setGameName("");
-    setPlayerName("");
-    setStatus("All");
-    setCurrency("All");
-    setGameType("All");
-    setType("All");
-    setRowsPerPage(10);
-    setCurrentPage(1);
+  const handleView = (row) => {
+    console.log("View bet row:", row);
   };
 
-  const stickyBaseHeader = "sticky z-20 bg-slate-50 dark:bg-slate-900";
-  const stickyBaseCell = "sticky z-10 bg-white dark:bg-slate-950";
-  const stickyShadow =
-    "shadow-[-10px_0_14px_-12px_rgba(15,23,42,0.18)] dark:shadow-[-10px_0_14px_-12px_rgba(2,6,23,0.45)]";
+  const handleEnterSearch = (event) => {
+    if (event.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   return (
     <div className="overflow-hidden rounded-[20px] border border-cyan-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-cyan-500/30 dark:bg-slate-950">
@@ -928,101 +1279,126 @@ function BetManagementPage() {
         <img
           src="/pattern3.png"
           alt=""
-          className="pointer-events-none absolute right-0 top-0 h-full w-60 object-cover opacity-15"
+          className="pointer-events-none absolute right-0 top-0 h-full w-60 object-cover object-right opacity-15 dark:opacity-10"
         />
 
         <div className="relative z-10">
-          <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <h1 className="text-[30px] font-bold tracking-[-0.03em] text-slate-800 dark:text-white">
               Bet Management
             </h1>
 
             <button
               type="button"
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-4 text-sm font-semibold text-white shadow-sm">
+              onClick={handleExportExcel}
+              className="inline-flex h-11 items-center gap-2 rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-5 text-sm font-semibold text-white shadow-sm">
               <Download className="h-4 w-4" />
               <span>Export Excel</span>
             </button>
           </div>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
-              <DateRangePickerInput
-                label="Bet Time"
-                value={betTime}
-                onChange={setBetTime}
-              />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+            <DateRangePicker
+              label="Bet Time"
+              value={betTimeFilter}
+              onChange={setBetTimeFilter}
+            />
 
-              <FilterInput
-                label="Trans Id"
-                placeholder="Enter Trans Id"
+            <div className="min-w-0">
+              <FieldLabel>Trans Id</FieldLabel>
+              <input
+                type="text"
                 value={transId}
                 onChange={(e) => setTransId(e.target.value)}
-              />
-
-              <FilterInput
-                label="Client Name"
-                placeholder="Enter Client Name"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-              />
-
-              <FilterInput
-                label="Provider Name"
-                placeholder="Enter Provider Name"
-                value={providerName}
-                onChange={(e) => setProviderName(e.target.value)}
-              />
-
-              <FilterInput
-                label="Game Name"
-                placeholder="Enter Game Name"
-                value={gameName}
-                onChange={(e) => setGameName(e.target.value)}
-              />
-
-              <FilterInput
-                label="Player Name"
-                placeholder="Enter Player Name"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
+                onKeyDown={handleEnterSearch}
+                placeholder="Enter Trans Id"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400"
               />
             </div>
 
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-end">
-              <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr]">
-                <FilterSelect
-                  label="Status"
-                  options={["All", "Success", "Canceled", "Processing"]}
-                  value={status}
-                  onChange={setStatus}
-                />
+            <div className="min-w-0">
+              <FieldLabel>Client Name</FieldLabel>
+              <input
+                type="text"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                onKeyDown={handleEnterSearch}
+                placeholder="Enter Client Name"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400"
+              />
+            </div>
 
-                <FilterSelect
-                  label="Currency"
-                  options={["All", "USD", "VND", "EUR"]}
-                  value={currency}
-                  onChange={setCurrency}
-                />
+            <div className="min-w-0">
+              <FieldLabel>Provider Name</FieldLabel>
+              <input
+                type="text"
+                value={providerName}
+                onChange={(e) => setProviderName(e.target.value)}
+                onKeyDown={handleEnterSearch}
+                placeholder="Enter Provider Name"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400"
+              />
+            </div>
 
-                <FilterSelect
-                  label="Game Type"
-                  options={["All", "Live Casino", "Lottery", "Slot"]}
-                  value={gameType}
-                  onChange={setGameType}
-                />
+            <div className="min-w-0">
+              <FieldLabel>Game Name</FieldLabel>
+              <input
+                type="text"
+                value={gameName}
+                onChange={(e) => setGameName(e.target.value)}
+                onKeyDown={handleEnterSearch}
+                placeholder="Enter Game Name"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400"
+              />
+            </div>
 
-                <FilterSelect
-                  label="Type"
-                  options={["All", "Promo", "Normal"]}
-                  value={type}
-                  onChange={setType}
-                />
-              </div>
+            <div className="min-w-0">
+              <FieldLabel>Player Name</FieldLabel>
+              <input
+                type="text"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                onKeyDown={handleEnterSearch}
+                placeholder="Enter Player Name"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none placeholder:text-slate-300 focus:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400"
+              />
+            </div>
+          </div>
 
-              <div className="flex shrink-0 items-end gap-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+            <FilterSelect
+              label="Status"
+              value={status}
+              onChange={setStatus}
+              options={STATUS_OPTIONS}
+            />
+
+            <FilterSelect
+              label="Currency"
+              value={currency}
+              onChange={setCurrency}
+              options={CURRENCY_OPTIONS}
+            />
+
+            <FilterSelect
+              label="Game Type"
+              value={gameType}
+              onChange={setGameType}
+              options={GAME_TYPE_OPTIONS}
+            />
+
+            <FilterSelect
+              label="Type"
+              value={type}
+              onChange={setType}
+              options={TYPE_OPTIONS}
+            />
+
+            <div className="flex items-end xl:justify-start">
+              <div className="flex w-full flex-wrap items-center gap-3 xl:w-auto xl:flex-nowrap">
                 <button
                   type="button"
+                  onClick={handleSearch}
                   className="inline-flex h-11 items-center gap-2 rounded-xl bg-linear-to-r from-cyan-400 to-emerald-400 px-5 text-sm font-semibold text-white shadow-sm">
                   <Search className="h-4 w-4" />
                   <span>Search</span>
@@ -1040,124 +1416,50 @@ function BetManagementPage() {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-[1880px] text-sm">
+      <div className="relative isolate overflow-x-auto">
+        <table className="min-w-[1850px] text-sm">
           <thead>
             <tr className="bg-slate-50 text-left text-slate-600 dark:bg-slate-900 dark:text-slate-300">
-              <th className="min-w-[90px] whitespace-nowrap px-4 py-4 font-semibold">
-                Trans ID
-              </th>
-              <th className="min-w-[110px] whitespace-nowrap px-4 py-4 font-semibold">
-                Client Name
-              </th>
-              <th className="min-w-[170px] whitespace-nowrap px-4 py-4 font-semibold">
-                Provider Name
-              </th>
-              <th className="min-w-[120px] whitespace-nowrap px-4 py-4 font-semibold">
-                Game Name
-              </th>
-              <th className="min-w-[110px] whitespace-nowrap px-4 py-4 font-semibold">
-                Game Type
-              </th>
-              <th className="min-w-[95px] whitespace-nowrap px-4 py-4 font-semibold">
-                Bet Amount
-              </th>
-              <th className="min-w-[130px] whitespace-nowrap px-4 py-4 font-semibold">
-                Win/Loss Amount
-              </th>
-              <th className="min-w-[110px] whitespace-nowrap px-4 py-4 font-semibold">
-                Profit/Loss
-              </th>
-              <th className="min-w-[110px] whitespace-nowrap px-4 py-4 font-semibold">
-                NET INCOME
-              </th>
-              <th className="min-w-[120px] whitespace-nowrap px-4 py-4 font-semibold">
-                Client Rate (%)
-              </th>
-              <th className="min-w-[110px] whitespace-nowrap px-4 py-4 font-semibold">
-                Provider Cost
-              </th>
-              <th className="min-w-[110px] whitespace-nowrap px-4 py-4 font-semibold">
-                Provider Cost
-              </th>
-              <th className="min-w-[110px] whitespace-nowrap px-4 py-4 font-semibold">
-                Provider Cost
-              </th>
-
-              <th
-                className={`${stickyBaseHeader} ${stickyShadow} right-[190px] min-w-[120px] whitespace-nowrap px-4 py-4 font-semibold`}>
-                Status
-              </th>
-              <th
-                className={`${stickyBaseHeader} right-[100px] min-w-[90px] whitespace-nowrap px-4 py-4 font-semibold`}>
-                Type
-              </th>
-              <th
-                className={`${stickyBaseHeader} right-0 min-w-[100px] whitespace-nowrap px-4 py-4 font-semibold`}>
-                Action
-              </th>
+              {TABLE_COLUMNS.map((column) => (
+                <th
+                  key={column.key}
+                  className={`whitespace-nowrap px-4 py-4 font-semibold ${column.minWidth || ""} ${getStickyRightClass(
+                    column,
+                    true,
+                  )}`}>
+                  {column.label}
+                </th>
+              ))}
             </tr>
           </thead>
 
           <tbody>
             {currentRows.map((row) => (
               <tr
-                key={row.id}
+                key={row.transId}
                 className="border-t border-slate-100 text-slate-700 dark:border-slate-800 dark:text-slate-300">
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {row.id}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {row.clientName}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {row.providerName}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {row.gameName}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {row.gameType}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {formatAmount(row.betAmount)}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  <ValueCell value={row.winLoss} />
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {row.profitLoss}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  <ValueCell value={row.netIncome} />
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {row.clientRate}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {formatAmount(row.providerCostValue)}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {row.providerCostCode1}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-middle">
-                  {row.providerCostCode2}
-                </td>
-
-                <td
-                  className={`${stickyBaseCell} ${stickyShadow} right-[190px] whitespace-nowrap px-4 py-3 align-middle`}>
-                  <StatusBadge status={row.status} />
-                </td>
-                <td
-                  className={`${stickyBaseCell} right-[100px] whitespace-nowrap px-4 py-3 align-middle`}>
-                  <TypeBadge type={row.type} />
-                </td>
-                <td
-                  className={`${stickyBaseCell} right-0 whitespace-nowrap px-4 py-3 align-middle`}>
-                  <ActionButtons />
-                </td>
+                {TABLE_COLUMNS.map((column) => (
+                  <td
+                    key={column.key}
+                    className={`whitespace-nowrap px-4 py-4 ${column.minWidth || ""} ${getStickyRightClass(
+                      column,
+                      false,
+                    )}`}>
+                    {renderCellContent(column.key, row, handleView)}
+                  </td>
+                ))}
               </tr>
             ))}
+
+            {currentRows.length === 0 && (
+              <tr>
+                <td
+                  colSpan={TABLE_COLUMNS.length}
+                  className="px-4 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+                  No matching bet transaction found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -1168,11 +1470,15 @@ function BetManagementPage() {
 
           <RowsPerPageSelect
             value={rowsPerPage}
-            onChange={handleChangeRowsPerPage}
+            onChange={(value) => {
+              setRowsPerPage(value);
+              setCurrentPage(1);
+            }}
           />
 
           <span>
-            {startIndex + 1} to {endIndex} of {totalEntries} entries
+            {totalEntries === 0 ? 0 : startIndex + 1} to {endIndex} of{" "}
+            {totalEntries} entries
           </span>
         </div>
 
@@ -1180,9 +1486,9 @@ function BetManagementPage() {
           <button
             type="button"
             onClick={handlePrevious}
-            disabled={currentPage === 1}
+            disabled={safeCurrentPage === 1}
             className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 transition ${
-              currentPage === 1
+              safeCurrentPage === 1
                 ? "cursor-not-allowed text-slate-300 dark:text-slate-700"
                 : "text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
             }`}>
@@ -1210,7 +1516,7 @@ function BetManagementPage() {
                   type="button"
                   onClick={() => setCurrentPage(item.value)}
                   className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 transition ${
-                    currentPage === item.value
+                    safeCurrentPage === item.value
                       ? "bg-indigo-600 text-white"
                       : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
                   }`}>
@@ -1223,9 +1529,9 @@ function BetManagementPage() {
           <button
             type="button"
             onClick={handleNext}
-            disabled={currentPage === totalPages}
+            disabled={safeCurrentPage === totalPages}
             className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 transition ${
-              currentPage === totalPages
+              safeCurrentPage === totalPages
                 ? "cursor-not-allowed text-slate-300 dark:text-slate-700"
                 : "text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white"
             }`}>
